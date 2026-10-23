@@ -54,6 +54,7 @@ function server() {
     }
     if (query.includes('noteAncestors')) return reply({ noteAncestors: [] });
     if (query.includes('noteComments')) return reply({ noteComments: [] });
+    if (query.includes('knowledgeAccumulations')) return reply({ knowledgeAccumulations: [], reviewProposals: [], noteActions: [] });
     throw new Error(`Unexpected GraphQL operation: ${query}`);
   });
   render(<MantineProvider env="test"><App /></MantineProvider>);

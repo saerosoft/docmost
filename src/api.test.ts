@@ -4,6 +4,19 @@ import { api } from './api';
 import { graphql } from './transport';
 vi.mock('./transport', async importOriginal => ({ ...await importOriginal<typeof import('./transport')>(), graphql: vi.fn() }));
 afterEach(() => vi.clearAllMocks());
+it('reads bounded authorized accumulation pages with source scope and dates intact', async () => {
+  const items = Array.from({ length: 20 }, (_, index) => ({ id: `item-${index}`, evidence: [{ visibility: 'ADMINISTRATORS', occurredAt: null, effectiveAt: null }] }));
+  vi.mocked(graphql).mockResolvedValueOnce({ knowledgeAccumulations: items });
+  expect(await api.accumulations('note', '20')).toEqual({ items, nextCursor: '40' });
+  expect(graphql).toHaveBeenLastCalledWith(expect.stringContaining('limit:20'), { noteId: 'note', offset: 20 });
+  expect(vi.mocked(graphql).mock.calls[0][0]).toContain('occurredAt effectiveAt visibility');
+});
+it('reads the selected applied change with its exact comparison and rule conditions', async () => {
+  const change = { before: null, after: null, operationBody: 'Recorded change', preserveHumanFields: true, requireEvidence: true, excludePrivateExamples: true, reviewPolicy: 'REVIEW', allowedDocumentTypes: [] };
+  vi.mocked(graphql).mockResolvedValueOnce({ knowledgeAccumulationChange: change });
+  expect(await api.accumulationChange('item')).toEqual(change);
+  expect(graphql).toHaveBeenLastCalledWith(expect.stringContaining('knowledgeAccumulationChange(id:$id)'), { id: 'item' });
+});
 it('submits a cross-space move with loaded revisions and preserves the destination parent', async () => {
   vi.mocked(graphql).mockResolvedValueOnce({ knowledgeNote: { id: 'note', spaceId: 'source', ownerId: 'owner', title: 'Note', revision: 7, richBody: null, body: '', visibility: 'PRIVATE', parentId: null, canEdit: true } });
   vi.mocked(graphql).mockResolvedValueOnce({ moveNotes: true });

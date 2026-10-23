@@ -25,7 +25,7 @@ export default function MermaidView(props: NodeViewProps) {
     if (!stored.loaded || !stored.source) return;
     void import("mermaid").then(async ({ default: mermaid }) => {
       mermaid.initialize({ startOnLoad: false, suppressErrorRendering: true, securityLevel: "strict",
-        flowchart: { htmlLabels: false }, theme: computedColorScheme === "light" ? "default" : "dark" });
+        htmlLabels: false, theme: computedColorScheme === "light" ? "default" : "dark" });
       const item = await mermaid.render(`mermaid-${uuidv4()}`, stored.source);
       if (active) setPreview(DOMPurify.sanitize(item.svg, { USE_PROFILES: { svg: true, svgFilters: true }, FORBID_TAGS: ["foreignObject", "image", "script", "iframe"] }));
     }).catch(() => { if (active) setError(t("Invalid Mermaid diagram")); });
@@ -40,7 +40,7 @@ export default function MermaidView(props: NodeViewProps) {
     <Group justify="space-between"><strong>Mermaid</strong><Button size="xs" disabled={!stored.loaded} onClick={() => { setSource(stored.source); setDirty(false); setOpened(true); }}>{stored.editable ? "원본 편집" : "원본 보기"}</Button></Group>
     <div className={classes.mermaid} contentEditable={false} dangerouslySetInnerHTML={{ __html: preview }}/>
     {(stored.error || error) && <p className={classes.error} role="alert">{stored.error || error} · 원문은 보존됩니다.</p>}
-    <Modal opened={opened} onClose={close} title="Mermaid" withinPortal={false} closeOnEscape={!stored.busy}>
+    <Modal opened={opened} onClose={close} title="Mermaid" closeOnEscape={!stored.busy} closeButtonProps={{ 'aria-label': 'Mermaid 닫기' }}>
       <Textarea label="Mermaid 원본" value={source} onChange={event => { setSource(event.currentTarget.value); setDirty(true); }} readOnly={!stored.editable || stored.busy} autosize minRows={8}/>
       {stored.error && <p role="alert">{stored.error}</p>}
       <Button loading={stored.busy} disabled={!stored.editable} onClick={async () => { if (await stored.saveData(source)) { setDirty(false); setOpened(false); } }}>첨부 개정 저장 후 노트에 적용</Button>

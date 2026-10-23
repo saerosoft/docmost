@@ -50,6 +50,7 @@ function server() {
     }
     if (query.includes('knowledgeNote(')) return reply({ knowledgeNote: notes.find(value => value.id === variables.id) });
     if (query.includes('noteComments')) return reply({ noteComments: [] });
+    if (query.includes('knowledgeAccumulations')) return reply({ knowledgeAccumulations: [], reviewProposals: [], noteActions: [] });
     if (query.includes('noteTree')) {
       const limit = Number(query.match(/limit:([0-9]+)/)?.[1]);
       pages.push({ ...variables, limit });

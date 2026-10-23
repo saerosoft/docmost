@@ -102,7 +102,7 @@
       "destination": "src/vendor/docmost/client/features/editor/styles/editor.module.css",
       "upstreamSha256": "de800f0df379f19efe5aa2291d09fc40c8c0dfefdef42c5c080a8d5fe5e1d4b7",
       "changes": [
-        "Scopes editor spacing and layout to the independently mounted pane."
+        "Scopes editor spacing and layout to the independently mounted pane; removes viewport-height blank space so note panels follow the document."
       ]
     },
     {
@@ -148,7 +148,8 @@
       "destination": "src/vendor/docmost/client/features/editor/page-editor.tsx",
       "upstreamSha256": "113e84ac1563672ed35b885f67f4264030602fcc8ec34de5be3d33399f063f4d",
       "changes": [
-        "Keeps the core Tiptap editor and menus with canonical extensions and local draft updates; removes Hocuspocus, Yjs, IndexedDB, global saving and Enterprise code. Unknown structured content blocks saving."
+        "Keeps the core Tiptap editor and menus with canonical extensions and local draft updates; removes Hocuspocus, Yjs, IndexedDB, global saving and Enterprise code. Unknown structured content blocks saving.",
+        "Identified the body editing surface for scoped sizing and replaced the extra viewport-sized focus area with a compact focus target beside the KN-02 context."
       ]
     },
     {
@@ -292,7 +293,8 @@
       "destination": "src/vendor/docmost/client/features/comment/components/comment-list-with-tabs.tsx",
       "upstreamSha256": "12804907ce4669740ee99f08bfb884d57032b056f6604f365e5fa31df2694537",
       "changes": [
-        "Keeps core comment list/input presentation and explicit bounded-page callbacks. Removes unsupported thread resolution, user queries and upstream mutations."
+        "Keeps core comment list/input presentation and explicit bounded-page callbacks. Removes unsupported thread resolution, user queries and upstream mutations.",
+        "Labeled the plain-text comment list without implying public visibility and gave its inner tab a distinct accessible name."
       ]
     },
     {
@@ -420,7 +422,8 @@
       "destination": "src/vendor/docmost/client/features/editor/components/drawio/drawio-view.tsx",
       "upstreamSha256": "2d1ff294df3dbc9c42a2618bedc064c3b2616cbf1dd9837465edb5b1a4e7a833",
       "changes": [
-        "Keeps the core node card and edit modal with authorized immutable XML attachments. Uses explicit HTTPS origin/window message validation, an XML editor when unconfigured, dirty-state protection and late-write guards."
+        "Keeps the core node card and edit modal with authorized immutable XML attachments. Uses explicit HTTPS origin/window message validation, an XML editor when unconfigured, dirty-state protection and late-write guards.",
+        "Portals the diagram dialog to the document body so its controls remain inside the viewport in either editing pane, and labels its close control."
       ]
     },
     {
@@ -428,7 +431,8 @@
       "destination": "src/vendor/docmost/client/features/editor/components/excalidraw/excalidraw-view.tsx",
       "upstreamSha256": "7e4baab04ca1b5a979e8c448f39163e13acf7fed331dd9e8cb4cc1a370d43383",
       "changes": [
-        "Keeps the core node card, local Excalidraw canvas and dirty modal flow. Reopens and serializes full scenes through immutable authorized attachments; removes upstream storage, library persistence and CDN path rewriting."
+        "Keeps the core node card, local Excalidraw canvas and dirty modal flow. Reopens and serializes full scenes through immutable authorized attachments; removes upstream storage, library persistence and CDN path rewriting.",
+        "Portals the diagram dialog to the document body so its controls remain inside the viewport in either editing pane, and labels its close control."
       ]
     },
     {
@@ -436,7 +440,9 @@
       "destination": "src/vendor/docmost/client/features/editor/components/code-block/mermaid-view.tsx",
       "upstreamSha256": "d7d7ed792db4a23fb2bf9cdeda1f41bd340bd3369c7b78c88a291cf6c08e53b3",
       "changes": [
-        "Keeps the core Mermaid rendering flow with strict, sanitized SVG. Adds canonical source editing and immutable authorized attachments; lazy-loads only visible diagrams."
+        "Keeps the core Mermaid rendering flow with strict, sanitized SVG. Adds canonical source editing and immutable authorized attachments; lazy-loads only visible diagrams.",
+        "Portals the diagram dialog to the document body so its controls remain inside the viewport in either editing pane, and labels its close control.",
+        "Disables HTML labels at the Mermaid root configuration so sanitized SVG retains its node and edge text."
       ]
     },
     {
@@ -616,7 +622,8 @@
     "The tree requests one 50-row sibling page at a time and retains at most 24 pages. Comments/history/relations use bounded 20-row API pages and at most 100 visible records. Core virtualization, keyboard navigation and parent drag-and-drop operate on these bounded results.",
     "Draw.io preserves editable XML with explicitly approved embed origins, Excalidraw preserves scene elements/appState/embedded files locally, and Mermaid preserves source text with strict sanitized rendering. A pinned dependency patch removes both SDK font CDN fallbacks; production fonts ship with the client.",
     "The complete modified-client source offer includes provenance, build scripts, package pins, release lockfile, dependency patch and license/notice texts. Runtime-import and component tests support source reuse; authenticated PostgreSQL live acceptance and representative capacity measurements remain separate checks.",
-    "Relocated the note-only client to the public fork root. Removed the upstream server, Enterprise modules, account/organization/workspace management and deployment stack. Replaced parent-repository Make entrypoints with client-only commands and retained the existing Node/pnpm pins."
+    "Relocated the note-only client to the public fork root. Removed the upstream server, Enterprise modules, account/organization/workspace management and deployment stack. Replaced parent-repository Make entrypoints with client-only commands and retained the existing Node/pnpm pins.",
+    "Connected the KN-02 context to authorized accumulation and comparison APIs, including source visibility and timing, actual applied rule versions, review/action links and bounded history pages. Scoped title, body and comment sizing for the note-only layout and added isolated browser regression tests against the real API."
   ],
   "integrationSource": {
     "repository": "https://github.com/saerosoft/knowledge-engine",

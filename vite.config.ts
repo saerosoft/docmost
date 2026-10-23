@@ -1,4 +1,4 @@
-import { defineConfig } from 'vitest/config';
+import { configDefaults, defineConfig } from 'vitest/config';
 import react from '@vitejs/plugin-react';
 import { fileURLToPath } from 'node:url';
 import { readFile, readdir } from 'node:fs/promises';
@@ -24,10 +24,12 @@ export default defineConfig({
   resolve: { alias: { '@': fileURLToPath(new URL('./src/vendor/docmost/client', import.meta.url)), '@knowledge': fileURLToPath(new URL('./src', import.meta.url)) } },
   server: {
     host: '127.0.0.1', port: 9090, strictPort: true,
+    watch: { ignored: ['**/.tmp/**', '**/public/source/**'] },
     proxy: { '/graphql': 'http://127.0.0.1:9086', '/api': 'http://127.0.0.1:9086' },
   },
   build: { sourcemap: true },
   test: {
+    exclude: [...configDefaults.exclude, 'e2e/**'],
     setupFiles: ['./src/test/browserLayout.ts'],
     server: { deps: { inline: [/@excalidraw\//, /roughjs/] } },
   },

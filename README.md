@@ -18,7 +18,9 @@ and modifications. Upstream history remains available in Git.
 - Note navigation: reorderable tabs, two independent editing panes, paginated
   trees, keyboard navigation, multi-select moves and subtree focus.
 - Note context: comments, revision history and restore, typed properties,
-  relationships, backlinks and authorized provenance links.
+  relationships, backlinks and authorized provenance links. The KN-02 context
+  shows recorded knowledge changes, original evidence and its visibility,
+  source and application times, applied rule versions and before/after records.
 - Editable Draw.io XML, Excalidraw scenes and Mermaid source, with attachment
   revision references and authorized file access.
 
@@ -62,11 +64,39 @@ through `http://localhost:9088`, then open `http://localhost:9090`. Use the
 same hostname for both applications so the product session cookie is shared.
 This repository does not start or provision those external services.
 
+The API must explicitly allow the note client's origin in
+`CORS_ALLOWED_ORIGINS`, alongside the product web origins. For local use:
+
+```dotenv
+CORS_ALLOWED_ORIGINS=http://localhost:9088,http://127.0.0.1:9088,http://localhost:9090,http://127.0.0.1:9090
+```
+
+Restart the API after changing that setting. The development proxy preserves
+the browser's Origin and the API's CSRF checks.
+
 `VITE_DRAWIO_ORIGIN` may select an approved HTTPS embed origin. No third-party
 Draw.io frame loads unless configured; XML editing remains available. The
 Excalidraw editor and its pinned fonts run locally. Preserve the SDK patch
 that removes automatic font CDN fallback. Mermaid uses strict, sanitized SVG.
 A diagram upload creates a file revision; save the note to commit its reference.
+
+## Browser verification
+
+Start the existing local API and this client's development server first. Use
+a local test account with permission to create, edit and archive notes. Set
+`NOTE_GUI_E2E_EMAIL` and `NOTE_GUI_E2E_PASSWORD` in the environment, or point
+`NOTE_GUI_E2E_STORAGE_STATE` to a Playwright state file containing only the
+local application's session cookies. Keep that file under `.tmp/`.
+
+```sh
+pnpm exec playwright install chromium
+pnpm test:browser
+```
+
+Set `NOTE_GUI_E2E_CHANNEL=chrome` to use an installed Chrome instead. The suite
+uses the real API. It creates its own notes, verifies their stored contents
+and archives those notes after each test. It does not reset the database or
+call an LLM. Browser profiles, screenshots, traces and reports stay in `.tmp/`.
 
 ## Source distribution
 
@@ -96,11 +126,11 @@ There is no Hocuspocus/Yjs provider or browser body database.
 The tree requests 50 siblings at a time and retains at most 24 pages.
 Comments, history and relationships use 20-row pages with at most 100 visible
 records. Location restoration and file access remain subject to the API's
-current authorization. The current contract does not support cross-space
-moves or property deletion. No million-note capacity measurement has been
-performed.
+current authorization. Property deletion is revision checked. Tree moves can
+target another authorized space in the same organization; the API checks
+subtrees, attachment history and external relationships before accepting them.
+No million-note capacity measurement has been performed.
 
-Component tests and distribution checks do not establish live screen
-acceptance. Authenticated edit/save/reload, history restore, diagram reopen,
-access revocation, comparison with KN-02 and representative capacity measurements
-remain required acceptance checks against the external domain API.
+See [the acceptance record](docs/note-gui-acceptance.md) for the canonical
+design units, observed browser behavior and remaining checks. Passing component
+tests or a production build alone does not establish screen acceptance.

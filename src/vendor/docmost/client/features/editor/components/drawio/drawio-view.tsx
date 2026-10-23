@@ -55,8 +55,8 @@ export default function DrawioView(props: NodeViewProps) {
   }, [opened, origin, stored.editable, apply, handleClose]);
 
   return <NodeViewWrapper ref={stored.container} data-drag-handle contentEditable={false}>
-    <Modal.Root opened={opened} onClose={handleClose} fullScreen closeOnEscape={!stored.busy} withinPortal={false}>
-      <Modal.Overlay/><Modal.Content><Modal.Header><Modal.Title>Draw.io</Modal.Title><Modal.CloseButton disabled={stored.busy}/></Modal.Header>
+    <Modal.Root opened={opened} onClose={handleClose} fullScreen closeOnEscape={!stored.busy}>
+      <Modal.Overlay/><Modal.Content><Modal.Header><Modal.Title>Draw.io</Modal.Title><Modal.CloseButton aria-label="Draw.io 닫기" disabled={stored.busy}/></Modal.Header>
         <Modal.Body pos="relative"><LoadingOverlay visible={stored.busy}/>
           {origin ? <><Text size="xs">이 편집기를 열면 다이어그램 원문이 승인된 {origin} 주소로 전달됩니다.</Text>
             <iframe ref={frame} title="Draw.io editor" src={`${origin}/?embed=1&proto=json&spin=1&libraries=1&ui=${computedColorScheme === "light" ? "kennedy" : "dark"}`}

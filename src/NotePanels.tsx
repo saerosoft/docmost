@@ -4,7 +4,6 @@ import './docmost/i18n';
 import CommentListWithTabs from './vendor/docmost/client/features/comment/components/comment-list-with-tabs';
 import { DocmostHistory } from './docmost/DocmostHistory';
 import { NoteProperties } from './NoteProperties';
-import { NoteProvenance } from './NoteProvenance';
 import { NoteRelations } from './NoteRelations';
 import type { AddComment, Comment, Note, NoteApi, Page, Revision } from './model';
 
@@ -58,6 +57,6 @@ export function NotePanels({ api, note, dirty, onRestore, onOpen, onRevision }: 
         onLoadMore={() => void perform(async () => { const page = await api.history(note.id, history.nextCursor); setHistory({ items: [...history.items, ...page.items].slice(-100), nextCursor: page.nextCursor }); })}/>
     </>}
     {panel === 'properties' && <NoteProperties api={api} note={note} dirty={dirty} onRevision={onRevision}/>}
-    {panel === 'relations' && <><NoteRelations api={api} note={note} onOpen={onOpen} onRevision={onRevision}/><NoteProvenance api={api} note={note}/></>}
+    {panel === 'relations' && <NoteRelations api={api} note={note} onOpen={onOpen} onRevision={onRevision}/>}
   </aside>;
 }

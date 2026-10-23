@@ -5,6 +5,8 @@ import { acceptMetadata, acceptSave, canClose, editDraft, openDraft, prepareSave
 import Page from './vendor/docmost/client/pages/page/page';
 import { DocmostPaneProvider } from './docmost/DocmostPaneProvider';
 import { NotePanels } from './NotePanels';
+import { NoteKnowledgeContext } from './NoteKnowledgeContext';
+import { NoteAccumulations } from './NoteAccumulations';
 import { ApiError, onAccessLost, onAccessRefresh } from './transport';
 
 interface Props { api: NoteApi; paneId: string; requestedId: string | null; onLocation: (id: string | null) => void; onDirty: (value: boolean) => void; onActivate: () => void }
@@ -89,7 +91,9 @@ export function Pane({ api, paneId, requestedId, onLocation, onDirty, onActivate
         <Button onClick={() => { if (window.confirm('내 변경을 버리고 서버 버전을 열까요?')) { update(active, () => latest); setEditorEpoch(value => value + 1); setLatest(undefined); } }}>서버 버전 열기</Button>
         <Button variant="subtle" onClick={() => setLatest(undefined)}>내 편집 계속</Button>
       </Group></div>}
-      <Page editorKey={`${paneId}:${active}:${editorEpoch}`} header={<Group justify="space-between" className="note-meta"><span>{draft.note.visibility === 'PRIVATE' ? '나만 보기' : '공간 공유'} · 개정 {draft.note.revision} · {draft.dirty ? '저장하지 않은 변경' : '저장됨'}</span><Group gap="xs">
+      <div className="note-detail"><article className="note-document" aria-label="노트 내용">
+      <h2 className="note-document-label">사람이 작성한 본문</h2>
+      <Page editorKey={`${paneId}:${active}:${editorEpoch}`} header={<Group justify="space-between" className="note-meta"><span>{draft.note.visibility === 'PRIVATE' ? '나만 보기' : draft.note.visibility === 'ADMINISTRATORS' ? '관리자 전용' : '공간 공유'} · 개정 {draft.note.revision} · {draft.dirty ? '저장하지 않은 변경' : '저장됨'}</span><Group gap="xs">
         <Button variant="subtle" size="xs" disabled={busy} onClick={async () => { const id = active; const epoch = sessionEpoch.current; setError(''); try { const note = await api.note(id); if (epoch === sessionEpoch.current && activeRef.current === id) setLatest(openDraft(note)); } catch (e) { if (epoch === sessionEpoch.current) setError((e as Error).message); } }}>최신 버전 확인</Button>
         <Button size="xs" disabled={!draft.note.canEdit || !draft.dirty || busy || invalid[active]} onClick={() => void save()}>저장</Button>
       </Group></Group>} editor={{
@@ -97,8 +101,8 @@ export function Pane({ api, paneId, requestedId, onLocation, onDirty, onActivate
         onTitleChange: title => update(active, value => editDraft(value, { title })),
         onInvalid: () => setInvalid(values => ({ ...values, [active]: true })),
         onChange: body => update(active, value => editDraft(value, { body })),
-      }} panels={<NotePanels key={active} api={api} note={draft.note} dirty={draft.dirty} onOpen={id => void open(id)} onRevision={note => update(active, value => acceptMetadata(value, note))} onRestore={note => { update(active, () => openDraft(note)); setEditorEpoch(value => value + 1); }}/>}/>
-
+      }} panels={<><NoteAccumulations key={`${active}:${draft.note.revision}`} api={api} noteId={active}/><NotePanels key={active} api={api} note={draft.note} dirty={draft.dirty} onOpen={id => void open(id)} onRevision={note => update(active, value => acceptMetadata(value, note))} onRestore={note => { update(active, () => openDraft(note)); setEditorEpoch(value => value + 1); }}/></>}/>
+      </article><NoteKnowledgeContext api={api} note={draft.note}/></div>
     </div>}
   </section></DocmostPaneProvider>;
 }

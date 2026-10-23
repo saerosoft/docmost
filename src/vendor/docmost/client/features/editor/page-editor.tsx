@@ -42,7 +42,7 @@ export default function PageEditor({ pageId, editable, content, onChange, onInva
     onUpdate({ editor }) { if (!invalid.current) change.current(editor.getJSON()); },
     editorProps: {
       scrollThreshold: 80, scrollMargin: 80,
-      attributes: { "aria-label": "노트 본문", role: "textbox", "aria-multiline": "true" },
+      attributes: { "aria-label": "노트 본문", role: "textbox", "aria-multiline": "true", "data-note-editor": "body" },
       handleDOMEvents: { keydown: (_view, event) => {
         if ((event.metaKey || event.ctrlKey) && event.code === "KeyS") { event.preventDefault(); return true; }
         return false;
@@ -72,6 +72,6 @@ export default function PageEditor({ pageId, editable, content, onChange, onInva
         <CalloutMenu editor={editor} appendTo={menuContainerRef.current}/>
       </>}
     </div>
-    <div onClick={() => { if (editor && !editor.isDestroyed) editor.commands.focus("end"); }} style={{ paddingBottom: "20vh" }} />
+    <div onClick={() => { if (editor && !editor.isDestroyed) editor.commands.focus("end"); }} style={{ minHeight: 32 }} />
   </div>;
 }

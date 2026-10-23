@@ -1,6 +1,6 @@
 import type { JSONContent } from '@tiptap/core';
 
-export type Visibility = 'SPACE' | 'PRIVATE';
+export type Visibility = 'SPACE' | 'PRIVATE' | 'ADMINISTRATORS';
 export interface Note {
   id: string; spaceId: string; title: string; revision: number; bodyJson: JSONContent;
   visibility: Visibility; canEdit: boolean; parentId: string | null;
@@ -33,6 +33,23 @@ export interface Provenance {
   actions: { id: string; spaceId: string; title: string }[];
 }
 export interface AttachmentRevision { attachmentId: string; revision: number; name: string; mimeType: string }
+export interface NoteAccumulation {
+  id: string; spaceId: string; changeSetId: string; kind: string; title: string; preview: string;
+  appliedAt: string; actorName: string | null; automatic: boolean; reviewerName: string | null; resultRevision: number;
+  evidenceCount: number;
+  evidence: {
+    id: string; revisionId: string; spaceId: string; title: string; locator: string; quote: string; quoteTruncated: boolean;
+    occurredAt: string | null; effectiveAt: string | null; visibility: Visibility;
+  }[];
+  rules: { rulesetId: string; versionId: string; name: string; versionNumber: number }[];
+}
+export interface NoteAccumulationChange {
+  operationBody: string;
+  before: { revision: number; title: string; body: string } | null;
+  after: { revision: number; title: string; body: string } | null;
+  preserveHumanFields: boolean; requireEvidence: boolean; excludePrivateExamples: boolean;
+  reviewPolicy: string; allowedDocumentTypes: string[];
+}
 export interface SaveNote { title: string; bodyJson: JSONContent; expectedRevision: number; idempotencyKey: string }
 export interface CreateNote { spaceId: string; title: string; parentId: string | null; visibility: Visibility; idempotencyKey: string }
 export interface AddComment { body: string; idempotencyKey: string }
@@ -43,6 +60,8 @@ export interface NoteApi {
   note(id: string): Promise<Note>;
   findNotes(spaceId: string, query: string): Promise<NoteSummary[]>;
   provenance(note: Note): Promise<Provenance>;
+  accumulations(id: string, cursor: string | null): Promise<Page<NoteAccumulation>>;
+  accumulationChange(id: string): Promise<NoteAccumulationChange>;
   create(input: CreateNote): Promise<Note>;
   save(id: string, input: SaveNote): Promise<Note>;
   move(ids: string[], parentId: string | null, spaceId: string): Promise<void>;

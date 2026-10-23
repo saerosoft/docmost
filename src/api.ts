@@ -1,6 +1,6 @@
 import { graphql, request, ApiError } from './transport';
 import type { JSONContent } from '@tiptap/core';
-import type { AttachmentRevision, Comment, Note, NoteApi, Page, PropertyValue, Provenance, Relation, RelationEvidence, RelationKind, RelationPredicate, RelationReviewState, Revision, Space, TreeNote, Visibility } from './model';
+import type { AttachmentRevision, Comment, Note, NoteAccumulation, NoteAccumulationChange, NoteApi, Page, PropertyValue, Provenance, Relation, RelationEvidence, RelationKind, RelationPredicate, RelationReviewState, Revision, Space, TreeNote, Visibility } from './model';
 
 interface WireRelation {
   id: string; fromNoteId: string; toNoteId: string; predicate: RelationPredicate; legacyPredicate: string | null; kind: RelationKind;
@@ -62,6 +62,20 @@ export const api: NoteApi = {
   async create({ spaceId, title, parentId, visibility, idempotencyKey }) {
     if (parentId) throw new ApiError('새 노트는 루트에 만든 뒤 선택 이동해 주세요.', 'UNSUPPORTED_PARENT_CREATE');
     return mapNote((await graphql<{ createKnowledgeNote: WireNote }>(`mutation($input:CreateNoteInput!){createKnowledgeNote(input:$input){${fields}}}`, { input: { spaceId, title, body: '', visibility, idempotencyKey } })).createKnowledgeNote);
+  },
+  async accumulations(noteId, cursor) {
+    const offset = Number(cursor || 0);
+    const values = (await graphql<{ knowledgeAccumulations: NoteAccumulation[] }>(
+      'query($noteId:UUID!,$offset:Int!){knowledgeAccumulations(noteId:$noteId,offset:$offset,limit:20){id spaceId changeSetId kind title preview appliedAt actorName automatic reviewerName resultRevision evidenceCount evidence{id revisionId spaceId title locator quote quoteTruncated occurredAt effectiveAt visibility} rules{rulesetId versionId name versionNumber}}}',
+      { noteId, offset },
+    )).knowledgeAccumulations;
+    return { items: values, nextCursor: values.length === 20 ? String(offset + 20) : null };
+  },
+  async accumulationChange(id) {
+    return (await graphql<{ knowledgeAccumulationChange: NoteAccumulationChange }>(
+      'query($id:UUID!){knowledgeAccumulationChange(id:$id){operationBody before{revision title body} after{revision title body} preserveHumanFields requireEvidence excludePrivateExamples reviewPolicy allowedDocumentTypes}}',
+      { id },
+    )).knowledgeAccumulationChange;
   },
   async save(id, input) {
     return mapNote((await graphql<{ saveRichNote: WireNote }>(`mutation($id:UUID!,$input:SaveRichNoteInput!){saveRichNote(id:$id,input:$input){${fields}}}`, { id, input: { expectedRevision: input.expectedRevision, title: input.title, richBody: JSON.stringify(input.bodyJson), schemaVersion: 1, idempotencyKey: input.idempotencyKey } })).saveRichNote);

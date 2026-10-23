@@ -54,8 +54,8 @@ export default function ExcalidrawView(props: NodeViewProps) {
   }, [stored.busy, dirty, close, t]);
 
   return <NodeViewWrapper ref={stored.container} data-drag-handle contentEditable={false}>
-    <Modal.Root opened={opened} onClose={handleClose} fullScreen withinPortal={false} closeOnEscape={!stored.busy}>
-      <Modal.Overlay/><Modal.Content><Modal.Header><Modal.Title>Excalidraw</Modal.Title><Modal.CloseButton disabled={stored.busy}/></Modal.Header><Modal.Body pos="relative">
+    <Modal.Root opened={opened} onClose={handleClose} fullScreen closeOnEscape={!stored.busy}>
+      <Modal.Overlay/><Modal.Content><Modal.Header><Modal.Title>Excalidraw</Modal.Title><Modal.CloseButton aria-label="Excalidraw 닫기" disabled={stored.busy}/></Modal.Header><Modal.Body pos="relative">
         <LoadingOverlay visible={stored.busy}/>
         <Group justify="flex-end" wrap="nowrap" bg="var(--mantine-color-body)" p="xs">
           <Button onClick={() => void saveData()} size="compact-sm" loading={stored.busy} disabled={!stored.editable || !excalidrawAPI}>{t("Save & Exit")}</Button>
