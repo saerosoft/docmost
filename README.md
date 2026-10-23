@@ -1,3 +1,72 @@
+# Knowledge Engine note GUI
+
+This public fork of [docmost/docmost](https://github.com/docmost/docmost) is for
+adapting Docmost's AGPL core note client into the Knowledge Engine note GUI.
+The selected design reuses the core editor, page layout, tree, comments,
+history views and diagram tools, with our own backend owning the data.
+
+The extraction baseline is **Docmost v0.96.0**, commit
+[`9b3e5dd3dc21588fa20c02c5b8646d2f46ee73af`](https://github.com/docmost/docmost/commit/9b3e5dd3dc21588fa20c02c5b8646d2f46ee73af).
+Work starts on `feature/knowledge-engine-note-gui` from that commit. The
+upstream `main` history is retained separately.
+
+## Planned changes
+
+- Extract the React, Mantine and Tiptap/ProseMirror core client into an
+  independently built browser application. Remove Enterprise UI, routes and
+  transitive imports from the extracted application.
+- Replace Docmost service hooks, authentication and file contracts with a
+  typed adapter to the Knowledge Engine API. Our backend owns sessions,
+  authorization, note IDs, bodies, revisions, comments and attachments.
+- Replace the Hocuspocus/Yjs body-save path with explicit API saves using
+  `expectedRevision` and idempotency keys. Preserve structured ProseMirror JSON
+  and report conflicting edits. Live simultaneous co-editing requires a
+  separate persistence design.
+- Add reorderable note tabs and two independent editing panes. Scope the
+  editor, title, toolbar, selection, comments, history and unsaved state to
+  each pane, including when both panes show the same note.
+- Add keyboard tree navigation, multi-select moves and subtree focus. Load
+  roots, children and ancestor paths on demand, with bounded client caching.
+- Add typed properties, relationships and backlinks with provenance, plus
+  authorized links to sources, rules, reviews and actions.
+- Preserve editable Draw.io XML and Excalidraw scene data with attachment
+  revisions, and Mermaid source in documents. Saving only a preview is
+  insufficient. Draw.io must use an approved embed origin.
+
+The original Docmost server and database are outside this integration.
+Knowledge Engine services remain responsible for permissions, persistence,
+search, AI rules and actions. Trilium is a behavioral reference for the added
+navigation features; its code and full feature set are outside this scope.
+
+## Status and acceptance
+
+This branch currently contains the upstream baseline and this scope statement.
+The standalone extraction and API integration have not been published from
+this branch. Build independence, editable-content round trips, pane isolation,
+revision conflicts, access revocation and bounded tree loading must be verified
+before the corresponding GUI work is accepted. Million-note capacity has not
+been demonstrated.
+
+The authoritative scope and checks are in the
+[canonical implementation plan](https://static.saerosoft.com/knowledge-engine/#implementation-plan).
+Work proceeds one named plan block or linked screen at a time.
+
+## License and source distribution
+
+The extracted client and its modifications will be published under AGPL-3.0,
+with corresponding source, build instructions, provenance and dependency
+notices. Preserve the upstream [LICENSE](LICENSE) and copyright notices.
+Enterprise directories retained in upstream history keep their separate
+license; `apps/client/src/ee`, `apps/server/src/ee` and `packages/ee` are excluded
+from the extraction. Connected applications require review of their actual
+code linkage and distribution.
+
+## Upstream Docmost documentation
+
+The documentation below describes the original Docmost application. Its
+features and startup instructions do not establish the fork's implementation
+or acceptance status.
+
 <div align="center">
     <h1><b>Docmost</b></h1>
     <p>
