@@ -1,0 +1,12 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Note GUI source</title><style>body{max-width:760px;margin:60px auto;padding:0 24px;font:16px/1.7 system-ui;color:#263b3a}a{color:#087f6a}pre{white-space:pre-wrap}</style></head><body>
+<h1>Knowledge Engine note GUI source</h1>
+<p>This modified Docmost-derived client is distributed under GNU AGPL version 3. The archive contains the complete client source, modifications, build instructions, notices and dependency manifest, lockfile and local SDK patch.</p>
+<p><a href="/source/note-gui-source.zip" download>Download complete client source</a> · <a href="/source/LICENSE">License</a> · <a href="/source/NOTICE">Notices</a> · <a href="/source/upstream-manifest.json">Source provenance and changes</a></p>
+<p>Upstream: Docmost v0.96.0, commit <code>9b3e5dd3dc21588fa20c02c5b8646d2f46ee73af</code>. The extracted page, editor, tree, comments, history, diagram UI and modifications are listed in the provenance manifest. No Enterprise modules are included.</p>
+<h2>Build</h2><pre>pnpm install --frozen-lockfile
+pnpm test
+pnpm source
+pnpm build</pre>
+<p>Use Node compatible with Vite 8 and Python 3.12+. See README.md in the archive for local API routing, configuration and redistribution requirements. Third-party packages retain their own licenses. This source offer makes no claim that connected applications are legally independent.</p>
+</body></html>

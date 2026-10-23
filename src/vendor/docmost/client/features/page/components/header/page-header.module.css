@@ -1,0 +1,24 @@
+.header {
+  min-height: 45px;
+  background-color: var(--mantine-color-body);
+  padding-left: var(--mantine-spacing-md);
+  padding-right: var(--mantine-spacing-md);
+  position: relative;
+  z-index: 99;
+
+  @media (max-width: $mantine-breakpoint-sm) {
+    padding-left: var(--mantine-spacing-xs);
+    padding-right: var(--mantine-spacing-xs);
+  }
+
+  @media print {
+    display: none;
+  }
+}
+
+.group {
+  @media (max-width: $mantine-breakpoint-sm) {
+    gap: var(--mantine-spacing-sm);
+    padding-inline: 0 !important;
+  }
+}

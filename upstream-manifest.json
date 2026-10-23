@@ -1,0 +1,626 @@
+{
+  "upstream": "https://github.com/docmost/docmost",
+  "tag": "v0.96.0",
+  "commit": "9b3e5dd3dc21588fa20c02c5b8646d2f46ee73af",
+  "files": [
+    {
+      "source": "packages/editor-ext/src/lib/attachment/attachment.ts",
+      "destination": "src/vendor/attachment/attachment.ts",
+      "upstreamSha256": "3ea675a025358c4ae1c6c1601e84058321a1c389478ad5dfa628229df2b821d6",
+      "changes": [
+        "Replaced broad utility import with local URL sanitizer"
+      ]
+    },
+    {
+      "source": "packages/editor-ext/src/lib/callout/callout.ts",
+      "destination": "src/vendor/callout/callout.ts",
+      "upstreamSha256": "26b6547fd04a6513ea5a103487899f4653e7c18dfa64d180657ab37cf121a5c4",
+      "changes": []
+    },
+    {
+      "source": "packages/editor-ext/src/lib/callout/utils.ts",
+      "destination": "src/vendor/callout/utils.ts",
+      "upstreamSha256": "fc1d52a72374a1ebc419036bb5d7d701ff3f089caf81dc067fa970652bf0b32b",
+      "changes": [
+        "Return info for empty callout type under strict TypeScript"
+      ]
+    },
+    {
+      "source": "packages/editor-ext/src/lib/page-break/page-break.ts",
+      "destination": "src/vendor/page-break/page-break.ts",
+      "upstreamSha256": "96a240440c90c6b3e14690cc3f54dbc80747866d5da5fd736581795e8a25e2b4",
+      "changes": []
+    },
+    {
+      "source": "apps/client/src/features/editor/components/fixed-toolbar/fixed-toolbar.tsx",
+      "destination": "src/vendor/docmost/client/features/editor/components/fixed-toolbar/fixed-toolbar.tsx",
+      "upstreamSha256": "095c1e8cd573dd7260cb657532b04a83238c15c33c6b74b73f8c12c9c80e1334",
+      "changes": [
+        "Uses the pane editor atom and scoped link, upload and diagram controls; keeps the core toolbar layout inside the pane."
+      ]
+    },
+    {
+      "source": "apps/client/src/features/editor/components/fixed-toolbar/fixed-toolbar.module.css",
+      "destination": "src/vendor/docmost/client/features/editor/components/fixed-toolbar/fixed-toolbar.module.css",
+      "upstreamSha256": "ad67f92895568b733d3bc0d3c53446e61d4a45fbc8f0d91207a9be1ec1679ae1",
+      "changes": [
+        "Changes the fixed viewport toolbar to a sticky pane toolbar."
+      ]
+    },
+    {
+      "source": "apps/client/src/features/editor/components/fixed-toolbar/use-toolbar-state.ts",
+      "destination": "src/vendor/docmost/client/features/editor/components/fixed-toolbar/use-toolbar-state.ts",
+      "upstreamSha256": "2f9881211adb125cf959c2a9294de13d8633babf541eda38e76f5bb4b2976993",
+      "changes": [
+        "Retains state for canonical schema commands and removes unsupported upstream formatting state."
+      ]
+    },
+    {
+      "source": "apps/client/src/features/editor/components/fixed-toolbar/groups/block-type-group.tsx",
+      "destination": "src/vendor/docmost/client/features/editor/components/fixed-toolbar/groups/block-type-group.tsx",
+      "upstreamSha256": "5aa8888769e3ae4da758e763ad92d6ab27ca54ec8cb4db4c55ce34ea23e68c29",
+      "changes": []
+    },
+    {
+      "source": "apps/client/src/features/editor/components/fixed-toolbar/groups/inline-marks-group.tsx",
+      "destination": "src/vendor/docmost/client/features/editor/components/fixed-toolbar/groups/inline-marks-group.tsx",
+      "upstreamSha256": "27dcaeb8c97c0ef3d51aa291628ab5844b2981cf65fff07cab1319fc6eabdb7a",
+      "changes": [
+        "Keeps canonical inline marks and removes unsupported subscript and superscript commands."
+      ]
+    },
+    {
+      "source": "apps/client/src/features/editor/components/fixed-toolbar/groups/lists-group.tsx",
+      "destination": "src/vendor/docmost/client/features/editor/components/fixed-toolbar/groups/lists-group.tsx",
+      "upstreamSha256": "0c984e8cdab096b7d84e7346573ebdb73642a30f076890966cca02fc2f4084a0",
+      "changes": []
+    },
+    {
+      "source": "apps/client/src/features/editor/components/fixed-toolbar/groups/quick-inserts-group.tsx",
+      "destination": "src/vendor/docmost/client/features/editor/components/fixed-toolbar/groups/quick-inserts-group.tsx",
+      "upstreamSha256": "59a02793354e0d4c7bc6658ace09f62e96808adeefae32b26eb63f31d8284ee1",
+      "changes": [
+        "Keeps canonical table insertion and removes unsupported upstream link commands."
+      ]
+    },
+    {
+      "source": "apps/client/src/features/editor/components/fixed-toolbar/groups/history-group.tsx",
+      "destination": "src/vendor/docmost/client/features/editor/components/fixed-toolbar/groups/history-group.tsx",
+      "upstreamSha256": "c61726bf33d17ad1cf4655cae1349dc2689e0763eb7c46aaaa0e73fd8e857c78",
+      "changes": []
+    },
+    {
+      "source": "apps/client/src/features/editor/components/fixed-toolbar/groups/media-group.tsx",
+      "destination": "src/vendor/docmost/client/features/editor/components/fixed-toolbar/groups/media-group.tsx",
+      "upstreamSha256": "8d1701195d21a1857422a3d23f0054a8263e3d3edd5a9e3acebdc4dc8e153cc0",
+      "changes": [
+        "Routes file selection through the authorized immutable attachment adapter; removes upstream upload and embed services."
+      ]
+    },
+    {
+      "source": "apps/client/src/features/editor/styles/editor.module.css",
+      "destination": "src/vendor/docmost/client/features/editor/styles/editor.module.css",
+      "upstreamSha256": "de800f0df379f19efe5aa2291d09fc40c8c0dfefdef42c5c080a8d5fe5e1d4b7",
+      "changes": [
+        "Scopes editor spacing and layout to the independently mounted pane."
+      ]
+    },
+    {
+      "source": "apps/client/src/features/editor/styles/core.css",
+      "destination": "src/vendor/docmost/client/features/editor/styles/core.css",
+      "upstreamSha256": "f6e3599374f1b1f41eef1b319fd6fa9604fb18444e2d7c08291952cf212577ad",
+      "changes": []
+    },
+    {
+      "source": "apps/client/src/features/editor/styles/task-list.css",
+      "destination": "src/vendor/docmost/client/features/editor/styles/task-list.css",
+      "upstreamSha256": "1a6d98eb00dfaf58f8747e5afc43e2d7a6c1ed09c2a877a4580ee2d9118d0f88",
+      "changes": []
+    },
+    {
+      "source": "apps/client/src/features/editor/styles/table.css",
+      "destination": "src/vendor/docmost/client/features/editor/styles/table.css",
+      "upstreamSha256": "cd24b79c2bcd00d7afe8b3457a4d6d8d03d2ec6af629ce4b8c98196a3381ffc0",
+      "changes": []
+    },
+    {
+      "source": "apps/client/src/features/editor/styles/code.css",
+      "destination": "src/vendor/docmost/client/features/editor/styles/code.css",
+      "upstreamSha256": "a8fb09b53e33fbb2ab00d1d312365e8601949647e7f5a62d58caa00524ca8ada",
+      "changes": []
+    },
+    {
+      "source": "apps/client/src/features/editor/styles/page-break.css",
+      "destination": "src/vendor/docmost/client/features/editor/styles/page-break.css",
+      "upstreamSha256": "d7bae40569e59efbfa57300a79fcc34d0f6faba512166c9f102ce9879b700f77",
+      "changes": []
+    },
+    {
+      "source": "apps/client/src/features/editor/full-editor.tsx",
+      "destination": "src/vendor/docmost/client/features/editor/full-editor.tsx",
+      "upstreamSha256": "24ff933e2addadc7eb404d4831ce988a8e19a6da77f0b76ceb0522086b34a46a",
+      "changes": [
+        "Keeps the core title/body/toolbar composition with explicit authorized pane inputs and attachment context; removes global page queries, preferences and Enterprise controls."
+      ]
+    },
+    {
+      "source": "apps/client/src/features/editor/page-editor.tsx",
+      "destination": "src/vendor/docmost/client/features/editor/page-editor.tsx",
+      "upstreamSha256": "113e84ac1563672ed35b885f67f4264030602fcc8ec34de5be3d33399f063f4d",
+      "changes": [
+        "Keeps the core Tiptap editor and menus with canonical extensions and local draft updates; removes Hocuspocus, Yjs, IndexedDB, global saving and Enterprise code. Unknown structured content blocks saving."
+      ]
+    },
+    {
+      "source": "apps/client/src/features/editor/title-editor.tsx",
+      "destination": "src/vendor/docmost/client/features/editor/title-editor.tsx",
+      "upstreamSha256": "64a01d6ab0501c8c113cf59701892592189ee182944739d8d162164c10b80bd8",
+      "changes": [
+        "Retains the title editor and keyboard hand-off with the pane editor atom and local title drafts; removes upstream autosave, global navigation and shared user state."
+      ]
+    },
+    {
+      "source": "apps/client/src/features/editor/components/slash-menu/types.ts",
+      "destination": "src/vendor/docmost/client/features/editor/components/slash-menu/types.ts",
+      "upstreamSha256": "ef4afc97b32b630574b1b248bf61dfd4562e0f2d5760771a2bff001144a01bf4",
+      "changes": [
+        "Narrows commands to canonical editor operations and supplies a unique pane menu ID."
+      ]
+    },
+    {
+      "source": "apps/client/src/features/editor/components/slash-menu/command-list.tsx",
+      "destination": "src/vendor/docmost/client/features/editor/components/slash-menu/command-list.tsx",
+      "upstreamSha256": "d84b6358472d316ec0e16d90c4b7b71cde35c406489ab55f06791a13fe3da8c7",
+      "changes": [
+        "Retains grouped core command presentation and keyboard navigation scoped to the current editor; uses unique option IDs."
+      ]
+    },
+    {
+      "source": "apps/client/src/features/editor/components/slash-menu/slash-menu.module.css",
+      "destination": "src/vendor/docmost/client/features/editor/components/slash-menu/slash-menu.module.css",
+      "upstreamSha256": "3f94e18a5519c46eb177ac3fa936512e76149d53cb775718c9fa067625af22c2",
+      "changes": []
+    },
+    {
+      "source": "apps/client/src/features/editor/components/slash-menu/render-items.ts",
+      "destination": "src/vendor/docmost/client/features/editor/components/slash-menu/render-items.ts",
+      "upstreamSha256": "1681e0aa87c670876f88def977fbd7f17c31539ed1534d199aa1230ef913debf",
+      "changes": [
+        "Keeps the core Tiptap ReactRenderer popup with local Floating UI placement, pane containment and destroy cleanup; removes global menu coupling."
+      ]
+    },
+    {
+      "source": "apps/client/src/features/editor/extensions/slash-command.ts",
+      "destination": "src/vendor/docmost/client/features/editor/extensions/slash-command.ts",
+      "upstreamSha256": "1ef24574edb068bd80475f20713d4d974950235221fbc86fe8a0781bda425cb4",
+      "changes": [
+        "Adapts core suggestion commands to pinned Tiptap 3 with flat items and canonical block filtering."
+      ]
+    },
+    {
+      "source": "apps/client/public/locales/ko-KR/translation.json",
+      "destination": "src/vendor/docmost/client/locales/ko-KR.json",
+      "upstreamSha256": "5f0326e190fd30aab6b6cb436d814fcae50e9ed45279d6ed3e00a36a7bb13a9f",
+      "changes": []
+    },
+    {
+      "source": "apps/client/src/features/editor/components/slash-menu/menu-items.ts",
+      "destination": "src/vendor/docmost/client/features/editor/components/slash-menu/menu-items.ts",
+      "upstreamSha256": "e2520e8e8d6706426099ccfdfa4e53b6495290e196168bc472fd6ea1be1d2279",
+      "changes": [
+        "Retains translated fuzzy search and canonical block commands; removes unsupported embeds, Enterprise commands and upstream upload operations."
+      ]
+    },
+    {
+      "source": "apps/client/src/features/editor/styles/placeholder.css",
+      "destination": "src/vendor/docmost/client/features/editor/styles/placeholder.css",
+      "upstreamSha256": "cee42ddac248f429d1a0951677d96ae8812d1026b1cdf2788ffd26fdf7a0b843",
+      "changes": []
+    },
+    {
+      "source": "apps/client/src/features/editor/styles/index.css",
+      "destination": "src/vendor/docmost/client/features/editor/styles/index.css",
+      "upstreamSha256": "ac73d63b59ac450eaf036bb8512a4b937613b656b679dc7ec1541b7c96cf0644",
+      "changes": [
+        "Includes only the retained canonical editor style closure."
+      ]
+    },
+    {
+      "source": "apps/client/src/features/page/tree/components/doc-tree.tsx",
+      "destination": "src/vendor/docmost/client/features/page/tree/components/doc-tree.tsx",
+      "upstreamSha256": "08506459e937593f2ce95e10486e7e0cd7529cec63211f10fa8d2fec806baf7c",
+      "changes": [
+        "Retains virtualized core tree navigation with roving focus and typeahead. Adds initial viewport bounds and drag-state callback; excludes bulk sibling expansion because the API displays one paged subtree."
+      ]
+    },
+    {
+      "source": "apps/client/src/features/page/tree/components/doc-tree-row.tsx",
+      "destination": "src/vendor/docmost/client/features/page/tree/components/doc-tree-row.tsx",
+      "upstreamSha256": "292d5ebd84740533f6f25b871a8a84bd78cb963089f6b7360e3af80a0c73e945",
+      "changes": [
+        "Retains the core pragmatic drag-and-drop row and previews. Allows only parent moves, awaits the domain move result, and excludes sibling reorder and hover expansion that the paged API cannot represent."
+      ]
+    },
+    {
+      "source": "apps/client/src/features/page/tree/components/doc-tree-drop-indicator.tsx",
+      "destination": "src/vendor/docmost/client/features/page/tree/components/doc-tree-drop-indicator.tsx",
+      "upstreamSha256": "acc26eaaf157bc454fe9615f6641f9a8758bcf3910fc36dd5713eed496d3629d",
+      "changes": []
+    },
+    {
+      "source": "apps/client/src/features/page/tree/components/doc-tree-drag-preview.tsx",
+      "destination": "src/vendor/docmost/client/features/page/tree/components/doc-tree-drag-preview.tsx",
+      "upstreamSha256": "5a58d6010e3f513e602242b9ba1bde8e160e6b805f30b0c9d3cc993c25d379b8",
+      "changes": []
+    },
+    {
+      "source": "apps/client/src/features/page/tree/components/doc-tree-drag-preview.module.css",
+      "destination": "src/vendor/docmost/client/features/page/tree/components/doc-tree-drag-preview.module.css",
+      "upstreamSha256": "5584f26129c60078541afcb6b2270b2b9f0e6726f1dd00b9e84668fe680d6cd2",
+      "changes": []
+    },
+    {
+      "source": "apps/client/src/features/page/tree/components/space-tree-row.tsx",
+      "destination": "src/vendor/docmost/client/features/page/tree/components/space-tree-row.tsx",
+      "upstreamSha256": "cde5d996c4493b47a6add7102d6ee54f3e1b785c7ea11bc1b5c7e94b8ca125a1",
+      "changes": [
+        "Retains the core row and expand indicator with current authorized note titles, selection and paged subtree navigation; removes global upstream page services and menus."
+      ]
+    },
+    {
+      "source": "apps/client/src/features/page/tree/model/tree-model.ts",
+      "destination": "src/vendor/docmost/client/features/page/tree/model/tree-model.ts",
+      "upstreamSha256": "de949955b961c4e1f8b7a0552a993ae7bd08261ea067d49104e9767ceb17aa8e",
+      "changes": []
+    },
+    {
+      "source": "apps/client/src/features/page/tree/model/tree-model.types.ts",
+      "destination": "src/vendor/docmost/client/features/page/tree/model/tree-model.types.ts",
+      "upstreamSha256": "aa01dd9a88c4dba03560f355ccf791dcc0cfa2f46f32d484b6da88ff11e17a15",
+      "changes": []
+    },
+    {
+      "source": "apps/client/src/features/page/tree/styles/tree.module.css",
+      "destination": "src/vendor/docmost/client/features/page/tree/styles/tree.module.css",
+      "upstreamSha256": "20701b9c37e6c805628cefeb0e355559ba73762de6ce82cd14bb3624582b32b6",
+      "changes": [
+        "Removes upstream shell indentation while retaining core row, focus and drop presentation."
+      ]
+    },
+    {
+      "source": "apps/client/src/features/comment/components/comment-list-with-tabs.tsx",
+      "destination": "src/vendor/docmost/client/features/comment/components/comment-list-with-tabs.tsx",
+      "upstreamSha256": "12804907ce4669740ee99f08bfb884d57032b056f6604f365e5fa31df2694537",
+      "changes": [
+        "Keeps core comment list/input presentation and explicit bounded-page callbacks. Removes unsupported thread resolution, user queries and upstream mutations."
+      ]
+    },
+    {
+      "source": "apps/client/src/features/comment/components/comment-list-item.tsx",
+      "destination": "src/vendor/docmost/client/features/comment/components/comment-list-item.tsx",
+      "upstreamSha256": "a5ff7b582f4d7d1c8a729d66edc37e1eb54c3353049da77d899970c04ce14d81",
+      "changes": [
+        "Renders canonical plain-text comments, authorized author names and timestamps; removes upstream threads, mentions and edit/delete operations."
+      ]
+    },
+    {
+      "source": "apps/client/src/features/comment/components/comment-editor.tsx",
+      "destination": "src/vendor/docmost/client/features/comment/components/comment-editor.tsx",
+      "upstreamSha256": "8d5c6e7c989b0a09f60b9c80564638c8454a341972f2fedbdecd57d9f08f9bf8",
+      "changes": [
+        "Keeps the core Tiptap comment input with the API-supported plain-text schema and local callbacks; preserves drafts until mutation acknowledgment."
+      ]
+    },
+    {
+      "source": "apps/client/src/features/comment/components/comment.module.css",
+      "destination": "src/vendor/docmost/client/features/comment/components/comment.module.css",
+      "upstreamSha256": "1b4553b68f8eb619e5bead428fe361b3f2b4e2a2d14757ffbf84fcebe00d945c",
+      "changes": []
+    },
+    {
+      "source": "apps/client/src/features/page-history/components/history-editor.tsx",
+      "destination": "src/vendor/docmost/client/features/page-history/components/history-editor.tsx",
+      "upstreamSha256": "6e309b2aa600250d0130ebd549e92fea780ffe0c202a576c4a45fc04045620dc",
+      "changes": [
+        "Keeps read-only core Tiptap revision rendering and change decorations using canonical immutable revision bodies; removes upstream history queries and excludes silent unsupported-content conversion."
+      ]
+    },
+    {
+      "source": "apps/client/src/features/page-history/components/history-list.tsx",
+      "destination": "src/vendor/docmost/client/features/page-history/components/history-list.tsx",
+      "upstreamSha256": "a06284d8daf2939f27b50e7ffd6d15c81b141e2f907e329e86b7d10863b0984f",
+      "changes": [
+        "Keeps core revision selection, comparison and restore controls with bounded page props and current revision-guarded domain callbacks; removes prefetch, global query cache and modal state."
+      ]
+    },
+    {
+      "source": "apps/client/src/features/page-history/components/history-item.tsx",
+      "destination": "src/vendor/docmost/client/features/page-history/components/history-item.tsx",
+      "upstreamSha256": "0fec4a58de00c41c98b2ff3694125fc020c260ce3a8d9150be1179a11e8482ee",
+      "changes": [
+        "Keeps core revision rows and comparison controls with canonical revision IDs, titles and timestamps; removes upstream contributor and prefetch fields."
+      ]
+    },
+    {
+      "source": "apps/client/src/features/page-history/components/css/history.module.css",
+      "destination": "src/vendor/docmost/client/features/page-history/components/css/history.module.css",
+      "upstreamSha256": "c71a508c9f791ef98c261ca5601fd504f7388d4813bb5561d463336a966bfd6c",
+      "changes": []
+    },
+    {
+      "source": "apps/client/src/features/page-history/atoms/history-atoms.ts",
+      "destination": "src/vendor/docmost/client/features/page-history/atoms/history-atoms.ts",
+      "upstreamSha256": "bd26ed5daf33533d2782108792d9cb4b89b489357339f3cb6de9514b805b2a70",
+      "changes": []
+    },
+    {
+      "source": "apps/client/src/features/page-history/utils/resolve-compare-pair.ts",
+      "destination": "src/vendor/docmost/client/features/page-history/utils/resolve-compare-pair.ts",
+      "upstreamSha256": "fd7eabff597550f47bdc31b909106daec3c73a9d0b958c22bf6c831812a32ac5",
+      "changes": []
+    },
+    {
+      "source": "packages/editor-ext/src/lib/recreate-transform/copy.ts",
+      "destination": "src/vendor/docmost/editor-ext/recreate-transform/copy.ts",
+      "upstreamSha256": "997b89e8fab7da1f9de442b4e44c4c1bc1a5dba7daf591834e63a565401f86fd",
+      "changes": []
+    },
+    {
+      "source": "packages/editor-ext/src/lib/recreate-transform/removeMarks.ts",
+      "destination": "src/vendor/docmost/editor-ext/recreate-transform/removeMarks.ts",
+      "upstreamSha256": "bb9348f566522b0e9cb4637b745956200b0bbf65fbc3a10588a626f471e07f03",
+      "changes": []
+    },
+    {
+      "source": "packages/editor-ext/src/lib/recreate-transform/getFromPath.ts",
+      "destination": "src/vendor/docmost/editor-ext/recreate-transform/getFromPath.ts",
+      "upstreamSha256": "9454d8e1c583237b5897bde9d045b544093e91eb7ddc1784326de4c44142df3b",
+      "changes": [
+        "Preserves the upstream diff algorithm with strict null, step and operation checks; removes obsolete TypeScript suppressions."
+      ]
+    },
+    {
+      "source": "packages/editor-ext/src/lib/recreate-transform/types.ts",
+      "destination": "src/vendor/docmost/editor-ext/recreate-transform/types.ts",
+      "upstreamSha256": "0fb69c933e9033fa32904b7536106396beafa3116067e72ba1847b72e40bec5b",
+      "changes": []
+    },
+    {
+      "source": "packages/editor-ext/src/lib/recreate-transform/getReplaceStep.ts",
+      "destination": "src/vendor/docmost/editor-ext/recreate-transform/getReplaceStep.ts",
+      "upstreamSha256": "df820e75e8694afad71a971a3ee253c520f4f4b1e04b5ce9b2182d0018fcbae0",
+      "changes": [
+        "Preserves the upstream diff algorithm with strict null, step and operation checks; removes obsolete TypeScript suppressions."
+      ]
+    },
+    {
+      "source": "packages/editor-ext/src/lib/recreate-transform/index.ts",
+      "destination": "src/vendor/docmost/editor-ext/recreate-transform/index.ts",
+      "upstreamSha256": "38535aadb8c14d8746f8a48c4f1b744999433ff00b8373396ab246daed1ecfcd",
+      "changes": []
+    },
+    {
+      "source": "packages/editor-ext/src/lib/recreate-transform/simplifyTransform.ts",
+      "destination": "src/vendor/docmost/editor-ext/recreate-transform/simplifyTransform.ts",
+      "upstreamSha256": "0c166e6a131c22c7a2495f0016dd5e873905227eeb06438631cd988bf678b16c",
+      "changes": [
+        "Preserves the upstream diff algorithm with strict null, step and operation checks; removes obsolete TypeScript suppressions."
+      ]
+    },
+    {
+      "source": "packages/editor-ext/src/lib/recreate-transform/recreateTransform.ts",
+      "destination": "src/vendor/docmost/editor-ext/recreate-transform/recreateTransform.ts",
+      "upstreamSha256": "2714849f4264ab9a849db734fdc43cd97667c46138013c1b58364d429c13fba0",
+      "changes": [
+        "Preserves the upstream diff algorithm with strict null, step and operation checks; removes obsolete TypeScript suppressions."
+      ]
+    },
+    {
+      "source": "apps/client/src/features/editor/components/drawio/drawio-view.tsx",
+      "destination": "src/vendor/docmost/client/features/editor/components/drawio/drawio-view.tsx",
+      "upstreamSha256": "2d1ff294df3dbc9c42a2618bedc064c3b2616cbf1dd9837465edb5b1a4e7a833",
+      "changes": [
+        "Keeps the core node card and edit modal with authorized immutable XML attachments. Uses explicit HTTPS origin/window message validation, an XML editor when unconfigured, dirty-state protection and late-write guards."
+      ]
+    },
+    {
+      "source": "apps/client/src/features/editor/components/excalidraw/excalidraw-view.tsx",
+      "destination": "src/vendor/docmost/client/features/editor/components/excalidraw/excalidraw-view.tsx",
+      "upstreamSha256": "7e4baab04ca1b5a979e8c448f39163e13acf7fed331dd9e8cb4cc1a370d43383",
+      "changes": [
+        "Keeps the core node card, local Excalidraw canvas and dirty modal flow. Reopens and serializes full scenes through immutable authorized attachments; removes upstream storage, library persistence and CDN path rewriting."
+      ]
+    },
+    {
+      "source": "apps/client/src/features/editor/components/code-block/mermaid-view.tsx",
+      "destination": "src/vendor/docmost/client/features/editor/components/code-block/mermaid-view.tsx",
+      "upstreamSha256": "d7d7ed792db4a23fb2bf9cdeda1f41bd340bd3369c7b78c88a291cf6c08e53b3",
+      "changes": [
+        "Keeps the core Mermaid rendering flow with strict, sanitized SVG. Adds canonical source editing and immutable authorized attachments; lazy-loads only visible diagrams."
+      ]
+    },
+    {
+      "source": "apps/client/src/features/editor/components/code-block/code-block.module.css",
+      "destination": "src/vendor/docmost/client/features/editor/components/code-block/code-block.module.css",
+      "upstreamSha256": "828eab1f3508b720d11c2ad019d02cc4eae498708061156eb0231fe91776f16f",
+      "changes": []
+    },
+    {
+      "source": "apps/client/src/features/editor/components/bubble-menu/bubble-menu.tsx",
+      "destination": "src/vendor/docmost/client/features/editor/components/bubble-menu/bubble-menu.tsx",
+      "upstreamSha256": "c548cd2d69f7740282c91e7436996bc52593bc6870200a69981ba17dbb1c5163",
+      "changes": [
+        "Keeps canonical core mark and link controls inside the current pane; removes Enterprise AI, upstream comment marks and unsupported formatting."
+      ]
+    },
+    {
+      "source": "apps/client/src/features/editor/components/bubble-menu/bubble-menu.module.css",
+      "destination": "src/vendor/docmost/client/features/editor/components/bubble-menu/bubble-menu.module.css",
+      "upstreamSha256": "3fea00385d7ba13d0c5fee8c1fee8405c4658bd644d0c83e9a963f7def00aa5e",
+      "changes": []
+    },
+    {
+      "source": "apps/client/src/features/editor/components/bubble-menu/link-selector.tsx",
+      "destination": "src/vendor/docmost/client/features/editor/components/bubble-menu/link-selector.tsx",
+      "upstreamSha256": "1dd4a7646f2a26ec45ba8c02c08b94d3474c9dde344fc988355210ef07a78a34",
+      "changes": [
+        "Scopes the core link menu trigger to the pane atom and canonical link mark."
+      ]
+    },
+    {
+      "source": "apps/client/src/features/editor/components/table/table-menu.tsx",
+      "destination": "src/vendor/docmost/client/features/editor/components/table/table-menu.tsx",
+      "upstreamSha256": "2d8a8867d3584bd8e6b40582e3c4279692c418db4f6af1a1f831f2c8b7247ec5",
+      "changes": [
+        "Retains core table commands with pane-contained Tiptap 3 BubbleMenu positioning and strict nullable readiness checks."
+      ]
+    },
+    {
+      "source": "apps/client/src/features/editor/components/table/types/types.ts",
+      "destination": "src/vendor/docmost/client/features/editor/components/table/types/types.ts",
+      "upstreamSha256": "ad9acb74cc0e850d87bf05ceca32f1b9c389c91e7ea06376ee909af62eb96784",
+      "changes": [
+        "Adds the pane menu container and strict optional state contract for pinned Tiptap 3 menus."
+      ]
+    },
+    {
+      "source": "apps/client/src/features/editor/components/callout/callout-menu.tsx",
+      "destination": "src/vendor/docmost/client/features/editor/components/callout/callout-menu.tsx",
+      "upstreamSha256": "c1e76ac684f82021f41bd87ea9459377a52fb47e03e1c528e5c0c2ad4783925d",
+      "changes": [
+        "Retains canonical core callout type commands with pane-contained Tiptap 3 positioning; removes unsupported emoji attributes."
+      ]
+    },
+    {
+      "source": "apps/client/src/features/editor/components/common/toolbar-menu.module.css",
+      "destination": "src/vendor/docmost/client/features/editor/components/common/toolbar-menu.module.css",
+      "upstreamSha256": "d9416f18cc52a7085c6da803be281ff9e7ccd7563ca4652c72cded814419f9cb",
+      "changes": []
+    },
+    {
+      "source": "apps/client/src/features/editor/components/link/link-menu.tsx",
+      "destination": "src/vendor/docmost/client/features/editor/components/link/link-menu.tsx",
+      "upstreamSha256": "a4a13c596f5ce50483e0f6fbe89d845015ad0f5914d1f59eb02e69e14252921b",
+      "changes": [
+        "Keeps the core link edit flow with pane atoms, local URL validation and canonical link commands; removes upstream page search and global state."
+      ]
+    },
+    {
+      "source": "apps/client/src/features/editor/components/link/link-editor-panel.tsx",
+      "destination": "src/vendor/docmost/client/features/editor/components/link/link-editor-panel.tsx",
+      "upstreamSha256": "f21c8f19d82bf6634c60e1cb5f22f4c096d3cf5dafd593495a1c54191e28412c",
+      "changes": [
+        "Keeps core link editing, apply/remove and keyboard controls with the canonical URL sanitizer; removes upstream note-search coupling."
+      ]
+    },
+    {
+      "source": "apps/client/src/features/editor/components/link/link.module.css",
+      "destination": "src/vendor/docmost/client/features/editor/components/link/link.module.css",
+      "upstreamSha256": "69d45bf18cf69f2e1f338c1c0f106db76338a2c3618ac07132963c0f07b086a8",
+      "changes": []
+    },
+    {
+      "source": "apps/client/src/features/editor/components/code-block/code-block-view.tsx",
+      "destination": "src/vendor/docmost/client/features/editor/components/code-block/code-block-view.tsx",
+      "upstreamSha256": "c6b9745503851d720504a8a272f99d11ac5909d01414df2835381cb2ccc5848e",
+      "changes": [
+        "Keeps core language selection, syntax-highlighted code content and copy controls using local lowlight languages and current edit permission; removes unsupported Mermaid code attributes."
+      ]
+    },
+    {
+      "source": "apps/client/src/features/editor/components/attachment/attachment-view.tsx",
+      "destination": "src/vendor/docmost/client/features/editor/components/attachment/attachment-view.tsx",
+      "upstreamSha256": "ddce9f399bc72daad8fe1fdfc306422a23389c96a40f3d5acdd3889d2b1cd500",
+      "changes": [
+        "Keeps the core file card and download controls using lazy authorized attachment blobs and object-URL cleanup; removes raw upstream storage URLs and unsupported previews."
+      ]
+    },
+    {
+      "source": "apps/client/src/features/editor/components/image/image-view.tsx",
+      "destination": "src/vendor/docmost/client/features/editor/components/image/image-view.tsx",
+      "upstreamSha256": "68098f885e895eaa9bbf661129b8421918e93be26204ee660b0ec69f271bc497",
+      "changes": [
+        "Keeps the core image node wrapper with lazy authorized blobs and alt text; removes raw upstream storage URLs, resize and alignment fields unsupported by the canonical schema."
+      ]
+    },
+    {
+      "source": "apps/client/src/features/editor/components/image/image-view.module.css",
+      "destination": "src/vendor/docmost/client/features/editor/components/image/image-view.module.css",
+      "upstreamSha256": "4459a0487b0aca4338218e817241cf47e94b1fa216327ded9182e3b1e0d26dab",
+      "changes": []
+    },
+    {
+      "source": "packages/editor-ext/src/lib/utils.ts",
+      "destination": "src/vendor/docmost/editor-ext/selection.ts",
+      "upstreamSha256": "7a39639fd7c88fa224ca615d90e699de0938ca201edb3af79975981ba76d1514",
+      "changes": [
+        "Retains only editor readiness, text selection and cell selection helpers; narrows the cell input to unknown."
+      ]
+    },
+    {
+      "source": "apps/client/src/pages/page/page.tsx",
+      "destination": "src/vendor/docmost/client/pages/page/page.tsx",
+      "upstreamSha256": "8acae7e7c8fbabe351579abc52d4edb1205272cf3dae97aa468dc68599d058dd",
+      "changes": [
+        "Keeps the core page renderer, error boundary and header/editor composition with explicit authorized pane props; removes upstream page queries, global routes, public sharing and Enterprise controls."
+      ]
+    },
+    {
+      "source": "apps/client/src/components/ui/empty-state.tsx",
+      "destination": "src/vendor/docmost/client/components/ui/empty-state.tsx",
+      "upstreamSha256": "9fee16f5d177de6f0024b7d471452f0fe4725f35ad103ca6123e9cf52295f417",
+      "changes": []
+    },
+    {
+      "source": "apps/client/src/components/ui/empty-state.module.css",
+      "destination": "src/vendor/docmost/client/components/ui/empty-state.module.css",
+      "upstreamSha256": "49032d8bbfb630810673c1f85f06d710acbb42c64b47b0d720a80b843dc54650",
+      "changes": []
+    },
+    {
+      "source": "apps/client/src/features/page/components/header/page-header.tsx",
+      "destination": "src/vendor/docmost/client/features/page/components/header/page-header.tsx",
+      "upstreamSha256": "571caf4d716cd9c4d06eb14250d9569a421d656cf639f46268f3259ea6a6b3d1",
+      "changes": [
+        "Keeps the core page header container with pane-owned revision/save actions; removes upstream menus and global page state."
+      ]
+    },
+    {
+      "source": "apps/client/src/features/page/components/header/page-header.module.css",
+      "destination": "src/vendor/docmost/client/features/page/components/header/page-header.module.css",
+      "upstreamSha256": "1bd32fcd3850154546b3595b5c7cd9979d3fd85731ee9fd2ad347d15dc3cc64e",
+      "changes": [
+        "Changes the viewport-fixed header to a relative pane header."
+      ]
+    },
+    {
+      "source": "apps/client/src/features/editor/components/callout/callout-view.tsx",
+      "destination": "src/vendor/docmost/client/features/editor/components/callout/callout-view.tsx",
+      "upstreamSha256": "253b9c3fb1d9a5050244b2bf25c49bb3f502eb434645b8f617fe60b913062cc6",
+      "changes": [
+        "Retains the core alert and icon node view with canonical callout types and without unsupported emoji attributes."
+      ]
+    },
+    {
+      "source": "apps/client/src/features/editor/components/callout/callout.module.css",
+      "destination": "src/vendor/docmost/client/features/editor/components/callout/callout.module.css",
+      "upstreamSha256": "9ce0103e08047433983cb84878ce1fc1382bf1b7d9f986cd8e3d2dad91aa094a",
+      "changes": []
+    }
+  ],
+  "verifiedArchiveSha256": "64a27b3b64138991235ab5ca8f07576d34c09ca90d5050dffc60ea1ed4ebdebf",
+  "applicationChanges": [
+    "Extracted and connected the selected core page renderer, title/body editor, toolbar, slash menu, table/code/link/file UI, virtualized tree, comments, revision history and editable diagram components. Per-file entries preserve original pinned source hashes and describe adaptations.",
+    "Our authorized domain API and PostgreSQL remain canonical for notes, revisions, permissions, files, tree moves and collaboration records. Core components consume explicit pane props and existing bounded API adapters; no upstream server, authentication, public sharing, Enterprise code, query service, Hocuspocus, Yjs or browser body database is retained.",
+    "Each pane owns its Jotai editor/title/history/menu context and in-memory tab drafts. Explicit note saves retain revision checks and idempotency; immutable attachment uploads do not silently commit note bodies. Access loss clears protected state and rejects late attachment updates.",
+    "The tree requests one 50-row sibling page at a time and retains at most 24 pages. Comments/history/relations use bounded 20-row API pages and at most 100 visible records. Core virtualization, keyboard navigation and parent drag-and-drop operate on these bounded results.",
+    "Draw.io preserves editable XML with explicitly approved embed origins, Excalidraw preserves scene elements/appState/embedded files locally, and Mermaid preserves source text with strict sanitized rendering. A pinned dependency patch removes both SDK font CDN fallbacks; production fonts ship with the client.",
+    "The complete modified-client source offer includes provenance, build scripts, package pins, release lockfile, dependency patch and license/notice texts. Runtime-import and component tests support source reuse; authenticated PostgreSQL live acceptance and representative capacity measurements remain separate checks.",
+    "Relocated the note-only client to the public fork root. Removed the upstream server, Enterprise modules, account/organization/workspace management and deployment stack. Replaced parent-repository Make entrypoints with client-only commands and retained the existing Node/pnpm pins."
+  ],
+  "integrationSource": {
+    "repository": "https://github.com/saerosoft/knowledge-engine",
+    "commit": "7de5cadb978bd7318bf6b72956a3d460d011ef9e",
+    "directory": "note-gui"
+  }
+}
