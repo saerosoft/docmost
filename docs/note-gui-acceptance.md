@@ -64,8 +64,9 @@ origin, and 200 for the configured note-client origin with a valid token.
 
 The [populated-data run](populated-data-acceptance.md) verified actual applied
 history, before/after snapshots, original source text and private-evidence
-separation between accounts. A separate view of currently valid knowledge and
-populated applied-rule provenance still need implementation and validation.
+separation between accounts, including a populated link to an actual approved
+rule version. A separate view of currently valid knowledge still needs
+implementation and validation.
 
 The [self-hosted Draw.io run](drawio-acceptance.md) verified graphical editing,
 save, reload and re-edit, immutable attachment bytes, forged-message rejection

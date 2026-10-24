@@ -8,6 +8,8 @@ interface PipelineFixture {
 }
 const path = process.env.NOTE_GUI_E2E_PIPELINE;
 const records = path ? JSON.parse(readFileSync(path, 'utf8')) as PipelineFixture : undefined;
+const rulePath = process.env.NOTE_GUI_E2E_RULE;
+const ruleRecord = rulePath ? JSON.parse(readFileSync(rulePath, 'utf8')) as { noteId: string; versionId: string; rulesetId: string; versionNumber: number; ruleName: string; body: string } : undefined;
 test.skip(!fixture || !records, 'Requires persisted, reviewed accumulation records and isolated account sessions.');
 
 test('pages real accumulation history and shows original evidence and actual before/after revisions', async ({ browser }) => {
@@ -71,4 +73,24 @@ test('keeps private evidence and administrator comparisons out of unauthorized a
     await expect(peerPage.getByRole('region', { name: '변경 전후와 반영 기준', exact: true })).toHaveCount(0);
     await expect(peerPage.getByText('The review time remains tentative and needs confirmation.', { exact: true })).toHaveCount(0);
   } finally { await role(owner.request, fixture!.peer, 'EDITOR'); await Promise.all([owner.close(), peer.close()]); }
+});
+
+test('shows the actual approved rule version pinned to an applied change', async ({ browser }) => {
+  test.skip(!ruleRecord, 'Requires a rule version approved through the real acceptance API.');
+  const owner = await account(browser, 'owner');
+  try {
+    const version = await graphql<{ ruleVersion: { id: string; rulesetId: string; versionNumber: number; approvedAt: string | null; status: string } }>(owner.request, 'query($id:UUID!){ruleVersion(id:$id){id rulesetId versionNumber approvedAt status}}', { id: ruleRecord!.versionId });
+    expect(version.ruleVersion.approvedAt).toBeTruthy(); expect(version.ruleVersion.status).toBe('ACTIVE');
+    expect(version.ruleVersion.rulesetId).toBe(ruleRecord!.rulesetId);
+    expect(version.ruleVersion.versionNumber).toBe(ruleRecord!.versionNumber);
+    const page = await owner.newPage();
+    await page.goto(`/?space=${fixture!.space}&note=${ruleRecord!.noteId}`);
+    const history = page.locator('.note-accumulations');
+    const link = history.getByRole('link', { name: `${ruleRecord!.ruleName} v${ruleRecord!.versionNumber}`, exact: true });
+    await expect(link).toHaveAttribute('href', new RegExp(`ruleset=${ruleRecord!.rulesetId}&version=${ruleRecord!.versionId}`));
+    await expect(history).toContainText(ruleRecord!.body);
+    await history.getByRole('button', { name: '변경 전후·반영 기준 보기', exact: true }).click();
+    await expect(history.getByRole('region', { name: '변경 전후와 반영 기준', exact: true })).toContainText('사람 편집 보존');
+    await page.screenshot({ path: '.tmp/browser/applied-rule-provenance.png', fullPage: true });
+  } finally { await owner.close(); }
 });

@@ -22,15 +22,24 @@ source revision through direct API requests. After that account was promoted,
 it opened an administrator comparison; demotion removed both the note context
 and expanded comparison on the next access poll.
 
+An additional real-API scenario verified a populated applied-rule link. A
+test-only ruleset was created with four required cases, validated without an
+available model, manually reviewed through the supported API, approved and
+activated in the isolated database. A controlled proposal pinned that exact
+version and was applied through `decideChangeSet`. The GUI's rule name, version
+number and destination IDs matched the actual approved version returned by
+the API. This checks provenance and approval plumbing, not model quality or
+production rule readiness; no provider execution profile was invented.
+
 These are change-history and authorization results. They do not establish
 that the old history list is a view of currently valid knowledge. KN-02's
 separate current-knowledge contract is being implemented in the owning
-Knowledge Engine backend. The test inputs also had no published rule version;
-showing an empty applied-rule list does not verify populated rule provenance.
+Knowledge Engine backend.
 
 ```sh
 NOTE_GUI_E2E_FIXTURE=.tmp/acceptance/fixtures.json \
 NOTE_GUI_E2E_PIPELINE=.tmp/acceptance/pipeline.json \
+NOTE_GUI_E2E_RULE=.tmp/acceptance/rule.json \
 NOTE_GUI_E2E_CHANNEL=chrome pnpm test:browser e2e/populated.spec.ts
 ```
 
