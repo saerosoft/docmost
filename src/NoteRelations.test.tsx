@@ -12,7 +12,7 @@ beforeEach(() => {
 });
 afterEach(() => { cleanup(); vi.unstubAllGlobals(); vi.restoreAllMocks(); });
 function fixture(canEdit = true) {
-  const note: Note = { id: 'note', spaceId: 'space', title: 'Title', revision: 4, bodyJson: { type: 'doc', content: [{ type: 'paragraph' }] }, visibility: 'SPACE', parentId: null, canEdit };
+  const note: Note = { id: 'note', spaceId: 'space', title: 'Title', revision: 4, bodyOrigin: 'HUMAN', bodyJson: { type: 'doc', content: [{ type: 'paragraph' }] }, visibility: 'SPACE', parentId: null, canEdit };
   const proposed: Relation = {
     id: 'relation', targetNoteId: 'target', title: 'Contract', predicate: 'SUPERSEDES', legacyPredicate: null, kind: 'INFERRED',
     reviewState: 'PROPOSED', revision: 1, validFrom: '2026-01-01T00:00:00Z', validTo: null, evidenceCount: 2, provenance: 'source-revision:raw', actorLabel: 'Relation author', direction: 'OUTGOING',

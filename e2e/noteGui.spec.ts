@@ -49,12 +49,14 @@ test('saves structured notes with the KN-02 context and a compact editor', async
   const titleBounds = await page.getByRole('textbox', { name: '노트 제목', exact: true }).boundingBox();
   expect(titleBounds!.height).toBeLessThan(140);
   await expect(page.getByRole('heading', { name: '현재 정리', exact: true })).toBeVisible();
+  await expect(page.getByRole('heading', { name: '누적 이력', exact: true })).toBeVisible();
   await expect(page.getByRole('heading', { name: '새 소스 반영 기준', exact: true })).toBeVisible();
   const summaryBounds = (await page.getByRole('region', { name: '현재 정리', exact: true }).boundingBox())!;
   const policyBounds = (await page.getByRole('region', { name: '새 소스 반영 기준', exact: true }).boundingBox())!;
   expect(summaryBounds.x).toBeLessThan(policyBounds.x);
   expect(summaryBounds.y).toBeLessThan(800);
   await expect(page.getByText('반영된 정리가 없습니다.', { exact: true })).toBeVisible();
+  await expect(page.getByText('현재 유효한 정리가 없습니다.', { exact: true })).toBeVisible();
   const body = page.getByRole('textbox', { name: '노트 본문', exact: true });
   await body.fill('Human-authored note.');
   await body.press('End');

@@ -1,15 +1,16 @@
 import type { JSONContent } from '@tiptap/core';
 
 export type Visibility = 'SPACE' | 'PRIVATE' | 'ADMINISTRATORS';
+export type KnowledgeBodyOrigin = 'HUMAN' | 'LEGACY_UNCLASSIFIED';
 export interface Note {
-  id: string; spaceId: string; title: string; revision: number; bodyJson: JSONContent;
+  id: string; spaceId: string; title: string; revision: number; bodyJson: JSONContent; bodyOrigin: KnowledgeBodyOrigin;
   visibility: Visibility; canEdit: boolean; parentId: string | null;
 }
 export interface TreeNote { id: string; title: string; parentId: string | null; hasChildren: boolean; revision: number }
 export interface Page<T> { items: T[]; nextCursor: string | null }
 export interface Space { id: string; name: string; accessEpoch: number; myRole: 'OWNER' | 'EDITOR' | 'VIEWER' }
 export interface NoteSummary { id: string; title: string }
-export interface Revision { id: string; revision: number; title: string; createdAt: string; bodyJson: JSONContent }
+export interface Revision { id: string; revision: number; title: string; createdAt: string; bodyJson: JSONContent; bodyOrigin: KnowledgeBodyOrigin }
 export interface Comment { id: string; body: string; createdAt: string; authorName: string }
 export type PropertyValue = { id?: string; key: string; valueType: 'TEXT' | 'NUMBER' | 'BOOLEAN' | 'DATE'; value: string };
 export type RelationPredicate = 'DERIVED_FROM' | 'SUPPORTS' | 'SUPERSEDES' | 'RELATED_TO';
@@ -50,6 +51,12 @@ export interface NoteAccumulationChange {
   preserveHumanFields: boolean; requireEvidence: boolean; excludePrivateExamples: boolean;
   reviewPolicy: string; allowedDocumentTypes: string[];
 }
+export interface CurrentKnowledgeItem {
+  id: string; claimKind: 'UNSPECIFIED' | 'REQUEST' | 'CONFIRMED_FACT' | 'INFERENCE'; body: string;
+  resultRevision: number; appliedAt: string; evidenceCount: number;
+  evidence: NoteAccumulation['evidence']; rules: NoteAccumulation['rules'];
+}
+export interface CurrentKnowledgePage extends Page<CurrentKnowledgeItem> { noteId: string; revision: number; bodyOrigin: KnowledgeBodyOrigin }
 export interface SaveNote { title: string; bodyJson: JSONContent; expectedRevision: number; idempotencyKey: string }
 export interface CreateNote { spaceId: string; title: string; parentId: string | null; visibility: Visibility; idempotencyKey: string }
 export interface AddComment { body: string; idempotencyKey: string }
@@ -61,6 +68,7 @@ export interface NoteApi {
   findNotes(spaceId: string, query: string): Promise<NoteSummary[]>;
   provenance(note: Note): Promise<Provenance>;
   accumulations(id: string, cursor: string | null): Promise<Page<NoteAccumulation>>;
+  currentKnowledge(id: string, cursor: string | null): Promise<CurrentKnowledgePage>;
   accumulationChange(id: string): Promise<NoteAccumulationChange>;
   create(input: CreateNote): Promise<Note>;
   save(id: string, input: SaveNote): Promise<Note>;

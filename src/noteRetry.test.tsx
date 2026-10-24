@@ -15,7 +15,7 @@ beforeEach(() => {
 });
 afterEach(() => { cleanup(); vi.unstubAllGlobals(); Reflect.deleteProperty(HTMLElement.prototype, 'scrollIntoView'); document.cookie = 'XSRF-TOKEN=;max-age=0'; });
 
-const note: Note = { id: 'note', spaceId: 'space', title: 'Note', revision: 1, bodyJson: { type: 'doc', content: [] }, visibility: 'PRIVATE', parentId: null, canEdit: true };
+const note: Note = { id: 'note', spaceId: 'space', title: 'Note', revision: 1, bodyOrigin: 'HUMAN', bodyJson: { type: 'doc', content: [] }, visibility: 'PRIVATE', parentId: null, canEdit: true };
 interface CreateInput { spaceId: string; title: string; body: string; visibility: Visibility; idempotencyKey: string }
 interface CommentInput { body: string; idempotencyKey: string }
 
@@ -44,6 +44,7 @@ function server(loseNextResponse = true) {
       return reply({ addNoteComment: { id: saved.id } });
     }
     if (query.includes('noteComments')) return reply({ noteComments: savedComments.filter(value => value.noteId === variables.noteId) });
+    if (query.includes('knowledgeCurrentItems')) return reply({ knowledgeCurrentItems: { noteId: variables.noteId, revision: 1, items: [], bodyOrigin: 'HUMAN', hasNext: false } });
     if (query.includes('knowledgeNote(')) return reply({ knowledgeNote: { ...note, id: variables.id, ownerId: 'owner', richBody: null, body: '', revision: 1 + savedComments.length } });
     if (query.includes('noteTree')) return reply({ noteTree: [] });
     if (query.includes('spaces')) return reply({ spaces: [{ id: 'space', name: 'Space', accessEpoch: 1, myRole: 'OWNER' }, { id: 'other', name: 'Other', accessEpoch: 1, myRole: 'OWNER' }] });

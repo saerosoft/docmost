@@ -18,8 +18,10 @@ and modifications. Upstream history remains available in Git.
 - Note navigation: reorderable tabs, two independent editing panes, paginated
   trees, keyboard navigation, multi-select moves and subtree focus.
 - Note context: comments, revision history and restore, typed properties,
-  relationships, backlinks and authorized provenance links. The KN-02 context
-  shows recorded knowledge changes, original evidence and its visibility,
+  relationships, backlinks and authorized provenance links. KN-02 separates
+  the authored document, currently valid knowledge and accumulation history.
+  Current items distinguish confirmed facts, requests, inference and
+  unclassified statements. Expand an item to inspect its original evidence,
   source and application times, applied rule versions and before/after records.
 - Editable Draw.io XML, Excalidraw scenes and Mermaid source, with attachment
   revision references and authorized file access.
@@ -65,6 +67,14 @@ through `http://localhost:9088`, then open `http://localhost:9090`. Use the
 same hostname for both applications so the product session cookie is shared.
 This repository does not start or provision those external services.
 
+The connected API must expose `knowledgeCurrentItems`, `KnowledgeNote.authoredBody`
+and `bodyOrigin` on notes and revisions. The editor loads `richBody` first,
+then `authoredBody`, including an intentionally empty authored body. Current
+knowledge comes only from the API's current-item projection. Older mixed
+documents remain unchanged and carry a `LEGACY_UNCLASSIFIED` notice; their
+history is not inferred to be current knowledge. Deploy the matching backend
+contract before this client.
+
 The API must explicitly allow the note client's origin in
 `CORS_ALLOWED_ORIGINS`, alongside the product web origins. For local use:
 
@@ -80,8 +90,7 @@ Draw.io frame loads unless configured. Without an embed, XML is editable;
 with an embed, the XML view follows graphical edits and is read-only to avoid
 two editors overwriting each other's drafts. The
 API's read-only permission selects the graphical viewer instead of the editor.
-The
-Excalidraw editor and its pinned fonts run locally. Preserve the SDK patch
+The Excalidraw editor and its pinned fonts run locally. Preserve the SDK patch
 that removes automatic font CDN fallback. Mermaid uses strict, sanitized SVG.
 A diagram upload creates a file revision; save the note to commit its reference.
 The [self-hosted graphical acceptance record](docs/drawio-acceptance.md)
@@ -132,7 +141,9 @@ There is no Hocuspocus/Yjs provider or browser body database.
 
 The tree requests 50 siblings at a time and retains at most 24 pages.
 Comments, history and relationships use 20-row pages with at most 100 visible
-records. Location restoration and file access remain subject to the API's
+records. Current knowledge and accumulation history replace their 20-row pages;
+evidence and comparisons expand inside the selected item. Location restoration
+and file access remain subject to the API's
 current authorization. Property deletion is revision checked. Tree moves can
 target another authorized space in the same organization; the API checks
 subtrees, attachment history and external relationships before accepting them.
@@ -141,6 +152,7 @@ measured bounded navigation and revision-checked editing against one million
 notes in a separate local database, including live account permission changes.
 Its workload and hardware limits remain explicit.
 
-See [the acceptance record](docs/note-gui-acceptance.md) for the canonical
-design units, observed browser behavior and remaining checks. Passing component
+See [the acceptance record](docs/note-gui-acceptance.md) and
+[current-knowledge checks](docs/current-knowledge-acceptance.md) for the canonical
+design units, observed browser behavior and workload limits. Passing component
 tests or a production build alone does not establish screen acceptance.

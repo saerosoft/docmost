@@ -1,10 +1,11 @@
 import type { Note, NoteApi } from './model';
+import { NoteAccumulations } from './NoteAccumulations';
 import { NoteProvenance } from './NoteProvenance';
 import { webUrl } from './webOrigin';
 
 export function NoteKnowledgeContext({ api, note }: { api: NoteApi; note: Note }) {
   const path = `/spaces/${encodeURIComponent(note.spaceId)}`;
-  return <aside className="knowledge-context" aria-label="노트의 현재 정리와 근거">
+  return <aside className="knowledge-context" aria-label="노트의 근거와 누적 이력">
     <nav className="context-actions" aria-label="이 노트에서 이어서 하기">
       <a href={webUrl(`${path}/knowledge/conflicts?note=${encodeURIComponent(note.id)}`)} target="_blank" rel="noreferrer">갱신 검토·미결</a>
       <a href={webUrl(`${path}/actions/new?note=${encodeURIComponent(note.id)}`)} target="_blank" rel="noreferrer">업무 만들기</a>
@@ -20,5 +21,6 @@ export function NoteKnowledgeContext({ api, note }: { api: NoteApi; note: Note }
       <p className="context-muted">수집 순서와 원본 발생·효력 시점을 구분합니다. 실제 적용 규칙은 각 반영 내역에서 확인할 수 있습니다.</p>
     </section>
     <NoteProvenance api={api} note={note}/>
+    <NoteAccumulations key={`${note.id}:${note.revision}`} api={api} noteId={note.id}/>
   </aside>;
 }

@@ -4,6 +4,24 @@ import { api } from './api';
 import { graphql } from './transport';
 vi.mock('./transport', async importOriginal => ({ ...await importOriginal<typeof import('./transport')>(), graphql: vi.fn() }));
 afterEach(() => vi.clearAllMocks());
+it('uses the server current-knowledge page and never derives its membership from history', async () => {
+  const item = { id: 'current-operation', body: 'Still tentative.', claimKind: 'INFERENCE', evidence: [], rules: [] };
+  vi.mocked(graphql).mockResolvedValueOnce({ knowledgeCurrentItems: { noteId: 'note', revision: 8, bodyOrigin: 'HUMAN', items: [item], hasNext: true } });
+  expect(await api.currentKnowledge('note', '20')).toEqual({ noteId: 'note', revision: 8, bodyOrigin: 'HUMAN', items: [item], nextCursor: '40' });
+  expect(graphql).toHaveBeenLastCalledWith(expect.stringContaining('knowledgeCurrentItems(noteId:$noteId,offset:$offset,limit:20)'), { noteId: 'note', offset: 20 });
+});
+it('uses authored plain text for editing even when the compatibility body contains AI knowledge', async () => {
+  vi.mocked(graphql).mockResolvedValueOnce({ knowledgeNote: { id: 'note', spaceId: 'space', ownerId: 'owner', title: 'Human title', revision: 9, richBody: null, authoredBody: '', body: 'AI current text', bodyOrigin: 'HUMAN', visibility: 'SPACE', parentId: null, canEdit: true } });
+  const note = await api.note('note');
+  expect(JSON.stringify(note.bodyJson)).not.toContain('AI current text');
+  expect(note.bodyOrigin).toBe('HUMAN');
+});
+it('reads revision authored text and preserves its legacy classification for restore', async () => {
+  vi.mocked(graphql).mockResolvedValueOnce({ noteRevisions: [{ id: 'revision', revision: 2, title: 'Original', createdAt: '2026-10-23T08:00:00Z', richBody: null, authoredBody: 'Preserved original', body: 'Preserved original\nAI text', bodyOrigin: 'LEGACY_UNCLASSIFIED' }] });
+  const history = await api.history('note', null);
+  expect(JSON.stringify(history.items[0].bodyJson)).not.toContain('AI text');
+  expect(history.items[0].bodyOrigin).toBe('LEGACY_UNCLASSIFIED');
+});
 it('reads bounded authorized accumulation pages with source scope and dates intact', async () => {
   const items = Array.from({ length: 20 }, (_, index) => ({ id: `item-${index}`, evidence: [{ visibility: 'ADMINISTRATORS', occurredAt: null, effectiveAt: null }] }));
   vi.mocked(graphql).mockResolvedValueOnce({ knowledgeAccumulations: items });
@@ -50,7 +68,7 @@ it('collects the sources, rules, reviews and actions of a note without duplicate
     reviewProposals: [{ id: 'proposal', spaceId: 'space', reason: 'Edit', status: 'PENDING' }],
     noteActions: [{ id: 'action', spaceId: 'space', title: 'Follow up' }],
   });
-  const value = await api.provenance({ id: 'note', spaceId: 'space', title: 'Note', revision: 1, bodyJson: { type: 'doc' }, visibility: 'SPACE', canEdit: true, parentId: null });
+  const value = await api.provenance({ id: 'note', spaceId: 'space', title: 'Note', revision: 1, bodyOrigin: 'HUMAN', bodyJson: { type: 'doc' }, visibility: 'SPACE', canEdit: true, parentId: null });
   expect(graphql).toHaveBeenLastCalledWith(expect.stringContaining('noteActions'), { spaceId: 'space', noteId: 'note' });
   expect(value).toEqual({
     sources: [{ revisionId: 'rev', spaceId: 'space', title: 'Chat' }],

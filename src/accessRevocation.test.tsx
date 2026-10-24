@@ -49,9 +49,10 @@ function server() {
       reads.tree++;
       return reply({ noteTree: await (state.pendingTree ?? (variables.parentId ? [child] : [folder])) });
     }
+    if (query.includes('knowledgeCurrentItems')) return reply({ knowledgeCurrentItems: { noteId: variables.noteId, revision: 1, items: [], bodyOrigin: 'HUMAN', hasNext: false } });
     if (query.includes('knowledgeNote(')) {
       reads.note++;
-      return reply({ knowledgeNote: { ...folder, spaceId: 'space', ownerId: 'owner', body: '', richBody: null, visibility: 'SPACE', canEdit: state.canEdit } });
+      return reply({ knowledgeNote: { ...folder, spaceId: 'space', ownerId: 'owner', bodyOrigin: 'HUMAN', body: '', richBody: null, visibility: 'SPACE', canEdit: state.canEdit } });
     }
     if (query.includes('noteAncestors')) return reply({ noteAncestors: [] });
     if (query.includes('noteComments')) return reply({ noteComments: [] });

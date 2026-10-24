@@ -17,11 +17,17 @@ test('pages real accumulation history and shows original evidence and actual bef
   try {
     const page = await owner.newPage();
     await page.goto(`/?space=${fixture!.space}&note=${records!.SPACE.noteId}`);
+    const current = page.getByRole('region', { name: '현재 정리', exact: true });
+    await expect(current.getByText('기존 본문은 작성 구분과 유효성을 확인해야 합니다.', { exact: true })).toBeVisible();
+    await expect(current.getByText('분리 확인된 현재 항목이 없습니다.', { exact: true })).toBeVisible();
+    await expect(current.locator('.current-knowledge-item')).toHaveCount(0);
+    await expect(page.getByRole('heading', { name: '기존 본문', exact: true })).toBeVisible();
     const history = page.locator('.note-accumulations');
     await expect(history.locator('article.accumulation-item')).toHaveCount(20);
     await history.getByRole('button', { name: '다음 반영 내역', exact: true }).click();
     await expect(history.locator('article.accumulation-item')).toHaveCount(5);
     const replaced = history.locator('article.accumulation-item').filter({ has: page.getByText('개정 2', { exact: true }) });
+    await replaced.locator('summary').click();
     await expect(replaced).toContainText('The confirmed delivery date is November 9.');
     await expect(replaced.locator('blockquote')).toHaveText('Acceptance original: The confirmed delivery date is November 9. The former proposed date is superseded.');
     await expect(replaced).toContainText('원본 발생'); await expect(replaced).toContainText('효력 시점'); await expect(replaced).toContainText('반영 시각');
@@ -47,12 +53,15 @@ test('keeps private evidence and administrator comparisons out of unauthorized a
   try {
     const page = await owner.newPage();
     await page.goto(`/?space=${fixture!.space}&note=${records!.PRIVATE.noteId}`);
+    await page.locator('.note-accumulations article summary').first().click();
     await expect(page.locator('.note-evidence .visibility-label').first()).toHaveText('본인만');
     await page.goto(`/?space=${fixture!.space}&note=${records!.ADMINISTRATORS.noteId}`);
+    await page.locator('.note-accumulations article summary').first().click();
     await expect(page.locator('.note-evidence .visibility-label').first()).toHaveText('관리자 전용');
     for (const visibility of ['PRIVATE', 'ADMINISTRATORS'] as const) {
       const operation = records!.operations.find(value => value.visibility === visibility)!;
       const queries = [
+        ['query($id:UUID!){knowledgeCurrentItems(noteId:$id,offset:0,limit:20){items{body evidence{quote}}}}', records![visibility].noteId],
         ['query($id:UUID!){knowledgeAccumulations(noteId:$id,offset:0,limit:20){preview evidence{quote}}}', records![visibility].noteId],
         ['query($id:UUID!){knowledgeAccumulationChange(id:$id){operationBody before{body} after{body}}}', operation.operationId],
         ['query($id:UUID!){sourceRevision(id:$id){body}}', operation.sourceRevisionId],
@@ -66,6 +75,7 @@ test('keeps private evidence and administrator comparisons out of unauthorized a
     await role(owner.request, fixture!.peer, 'OWNER');
     const peerPage = await peer.newPage();
     await peerPage.goto(`/?space=${fixture!.space}&note=${records!.ADMINISTRATORS.noteId}`);
+    await peerPage.locator('.note-accumulations article summary').first().click();
     await peerPage.locator('.note-accumulations').getByRole('button', { name: '변경 전후·반영 기준 보기', exact: true }).first().click();
     await expect(peerPage.getByRole('region', { name: '변경 전후와 반영 기준', exact: true })).toBeVisible();
     await role(owner.request, fixture!.peer, 'EDITOR');
@@ -86,11 +96,34 @@ test('shows the actual approved rule version pinned to an applied change', async
     const page = await owner.newPage();
     await page.goto(`/?space=${fixture!.space}&note=${ruleRecord!.noteId}`);
     const history = page.locator('.note-accumulations');
+    await history.locator('article summary').first().click();
     const link = history.getByRole('link', { name: `${ruleRecord!.ruleName} v${ruleRecord!.versionNumber}`, exact: true });
     await expect(link).toHaveAttribute('href', new RegExp(`ruleset=${ruleRecord!.rulesetId}&version=${ruleRecord!.versionId}`));
     await expect(history).toContainText(ruleRecord!.body);
     await history.getByRole('button', { name: '변경 전후·반영 기준 보기', exact: true }).click();
     await expect(history.getByRole('region', { name: '변경 전후와 반영 기준', exact: true })).toContainText('사람 편집 보존');
     await page.screenshot({ path: '.tmp/browser/applied-rule-provenance.png', fullPage: true });
+  } finally { await owner.close(); }
+});
+
+test('restores a legacy revision without reclassifying its mixed body as human or current knowledge', async ({ browser }) => {
+  const owner = await account(browser, 'owner');
+  const query = 'query($id:UUID!){knowledgeNote(id:$id){revision richBody bodyOrigin}}';
+  type NoteState = { knowledgeNote: { revision: number; richBody: string | null; bodyOrigin: string } };
+  try {
+    const before = (await graphql<NoteState>(owner.request, query, { id: records!.SPACE.noteId })).knowledgeNote;
+    expect(before.bodyOrigin).toBe('LEGACY_UNCLASSIFIED');
+    const page = await owner.newPage();
+    await page.goto(`/?space=${fixture!.space}&note=${records!.SPACE.noteId}`);
+    await page.getByRole('tab', { name: '이력', exact: true }).click();
+    await expect(page.getByText('이 개정은 작성 구분을 확인해야 하는 기존 본문입니다. 복원할 때도 원문과 작성 구분을 유지합니다.', { exact: true })).toBeVisible();
+    page.once('dialog', dialog => void dialog.accept());
+    await page.getByRole('button', { name: '복원', exact: true }).click();
+    await expect.poll(async () => (await graphql<NoteState>(owner.request, query, { id: records!.SPACE.noteId })).knowledgeNote.revision).toBe(before.revision + 1);
+    const after = (await graphql<NoteState>(owner.request, query, { id: records!.SPACE.noteId })).knowledgeNote;
+    expect(after.richBody).toBe(before.richBody); expect(after.bodyOrigin).toBe('LEGACY_UNCLASSIFIED');
+    await expect(page.getByRole('heading', { name: '기존 본문', exact: true })).toBeVisible();
+    const current = await graphql<{ knowledgeCurrentItems: { items: unknown[]; bodyOrigin: string } }>(owner.request, 'query($id:UUID!){knowledgeCurrentItems(noteId:$id,offset:0,limit:20){items{id} bodyOrigin}}', { id: records!.SPACE.noteId });
+    expect(current.knowledgeCurrentItems.items).toEqual([]); expect(current.knowledgeCurrentItems.bodyOrigin).toBe('LEGACY_UNCLASSIFIED');
   } finally { await owner.close(); }
 });

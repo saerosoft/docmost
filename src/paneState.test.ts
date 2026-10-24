@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { acceptMetadata, acceptSave, canClose, editDraft, openDraft, prepareSave, reorder } from './paneState';
 import type { Note } from './model';
 
-const note: Note = { id: 'note', spaceId: 'space', title: 'Title', revision: 1, bodyJson: { type: 'doc', content: [{ type: 'paragraph', content: [{ type: 'text', text: 'Original' }] }] }, visibility: 'PRIVATE', canEdit: true, parentId: null };
+const note: Note = { id: 'note', spaceId: 'space', title: 'Title', revision: 1, bodyOrigin: 'HUMAN', bodyJson: { type: 'doc', content: [{ type: 'paragraph', content: [{ type: 'text', text: 'Original' }] }] }, visibility: 'PRIVATE', canEdit: true, parentId: null };
 describe('pane draft ownership', () => {
   it('keeps independent drafts for the same note in two panes', () => {
     const left = editDraft(openDraft(note), { title: 'Left title' });

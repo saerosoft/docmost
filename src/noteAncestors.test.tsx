@@ -14,7 +14,7 @@ beforeEach(() => {
 afterEach(() => { cleanup(); vi.unstubAllGlobals(); Reflect.deleteProperty(HTMLElement.prototype, 'scrollIntoView'); document.cookie = 'XSRF-TOKEN=;max-age=0'; window.history.replaceState(null, '', '/'); });
 
 function note(id: string, title: string, parentId: string | null) {
-  return { id, title, parentId, spaceId: 'space', ownerId: 'owner', body: '', richBody: null, revision: 1, visibility: 'PRIVATE', canEdit: true };
+  return { id, title, parentId, spaceId: 'space', ownerId: 'owner', bodyOrigin: 'HUMAN', body: '', richBody: null, revision: 1, visibility: 'PRIVATE', canEdit: true };
 }
 function server() {
   const notes = [
@@ -48,6 +48,7 @@ function server() {
       variables.input.items.forEach((value: { id: string }) => reparent(value.id, variables.input.parentId));
       return reply({ moveNotes: true });
     }
+    if (query.includes('knowledgeCurrentItems')) return reply({ knowledgeCurrentItems: { noteId: variables.noteId, revision: 1, items: [], bodyOrigin: 'HUMAN', hasNext: false } });
     if (query.includes('knowledgeNote(')) return reply({ knowledgeNote: notes.find(value => value.id === variables.id) });
     if (query.includes('noteComments')) return reply({ noteComments: [] });
     if (query.includes('knowledgeAccumulations')) return reply({ knowledgeAccumulations: [], reviewProposals: [], noteActions: [] });

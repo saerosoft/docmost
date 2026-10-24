@@ -1,19 +1,19 @@
 import { graphql, request, ApiError } from './transport';
 import type { JSONContent } from '@tiptap/core';
-import type { AttachmentRevision, Comment, Note, NoteAccumulation, NoteAccumulationChange, NoteApi, Page, PropertyValue, Provenance, Relation, RelationEvidence, RelationKind, RelationPredicate, RelationReviewState, Revision, Space, TreeNote, Visibility } from './model';
+import type { AttachmentRevision, Comment, CurrentKnowledgePage, KnowledgeBodyOrigin, Note, NoteAccumulation, NoteAccumulationChange, NoteApi, Page, PropertyValue, Provenance, Relation, RelationEvidence, RelationKind, RelationPredicate, RelationReviewState, Revision, Space, TreeNote, Visibility } from './model';
 
 interface WireRelation {
   id: string; fromNoteId: string; toNoteId: string; predicate: RelationPredicate; legacyPredicate: string | null; kind: RelationKind;
   reviewState: RelationReviewState; revision: number; validFrom: string | null; validTo: string | null; evidenceIds: string[]; provenance: string; actorLabel: string | null;
 }
-interface WireNote { id: string; spaceId: string; ownerId: string; title: string; revision: number; richBody: string | null; body: string; visibility: Visibility; parentId: string | null; canEdit: boolean }
+interface WireNote { id: string; spaceId: string; ownerId: string; title: string; revision: number; richBody: string | null; authoredBody: string | null; bodyOrigin: KnowledgeBodyOrigin; body: string; visibility: Visibility; parentId: string | null; canEdit: boolean }
 interface WireProvenance {
   knowledgeAccumulations: { changeSetId: string; spaceId: string; title: string; evidence: { revisionId: string; spaceId: string; title: string }[]; rules: { rulesetId: string; versionId: string; name: string; versionNumber: number }[] }[];
   reviewProposals: { id: string; spaceId: string; reason: string; status: Provenance['reviews'][number]['status'] }[];
   noteActions: { id: string; spaceId: string; title: string }[];
 }
 interface WireProperty { id: string; name: string; valueType: PropertyValue['valueType']; textValue: string | null; numberValue: string | null; dateValue: string | null; booleanValue: boolean | null }
-const fields = 'id spaceId ownerId title revision richBody body visibility parentId canEdit';
+const fields = 'id spaceId ownerId title revision richBody body authoredBody bodyOrigin visibility parentId canEdit';
 const key = () => crypto.randomUUID();
 export function parseBody(value: string | null, plain: string): JSONContent {
   if (!value) return { type: 'doc', content: plain.split('\n').map(text => ({ type: 'paragraph', ...(text ? { content: [{ type: 'text', text }] } : {}) })) };
@@ -22,7 +22,7 @@ export function parseBody(value: string | null, plain: string): JSONContent {
   return parsed;
 }
 async function mapNote(value: WireNote): Promise<Note> {
-  return { id: value.id, spaceId: value.spaceId, title: value.title, revision: value.revision, bodyJson: parseBody(value.richBody, value.body), visibility: value.visibility, parentId: value.parentId, canEdit: value.canEdit };
+  return { id: value.id, spaceId: value.spaceId, title: value.title, revision: value.revision, bodyJson: parseBody(value.richBody, value.authoredBody ?? value.body), bodyOrigin: value.bodyOrigin, visibility: value.visibility, parentId: value.parentId, canEdit: value.canEdit };
 }
 function page<T>(items: T[], cursor: (value: T) => string, size: number): Page<T> { return { items, nextCursor: items.length === size ? cursor(items[items.length - 1]) : null }; }
 export const api: NoteApi = {
@@ -77,6 +77,14 @@ export const api: NoteApi = {
       { id },
     )).knowledgeAccumulationChange;
   },
+  async currentKnowledge(noteId, cursor) {
+    const offset = Number(cursor || 0);
+    const value = (await graphql<{ knowledgeCurrentItems: Omit<CurrentKnowledgePage, 'nextCursor'> & { hasNext: boolean } }>(
+      'query($noteId:UUID!,$offset:Int!){knowledgeCurrentItems(noteId:$noteId,offset:$offset,limit:20){noteId revision bodyOrigin hasNext items{id claimKind body resultRevision appliedAt evidenceCount evidence{id revisionId spaceId title locator quote quoteTruncated occurredAt effectiveAt visibility} rules{rulesetId versionId name versionNumber}}}}',
+      { noteId, offset },
+    )).knowledgeCurrentItems;
+    return { noteId: value.noteId, revision: value.revision, bodyOrigin: value.bodyOrigin, items: value.items, nextCursor: value.hasNext ? String(offset + 20) : null };
+  },
   async save(id, input) {
     return mapNote((await graphql<{ saveRichNote: WireNote }>(`mutation($id:UUID!,$input:SaveRichNoteInput!){saveRichNote(id:$id,input:$input){${fields}}}`, { id, input: { expectedRevision: input.expectedRevision, title: input.title, richBody: JSON.stringify(input.bodyJson), schemaVersion: 1, idempotencyKey: input.idempotencyKey } })).saveRichNote);
   },
@@ -89,8 +97,8 @@ export const api: NoteApi = {
   },
   async history(noteId, cursor) {
     const offset = Number(cursor || 0);
-    const values = (await graphql<{ noteRevisions: { id: string; revision: number; title: string; createdAt: string; richBody: string | null; body: string }[] }>('query($noteId:UUID!,$offset:Int!){noteRevisions(noteId:$noteId,offset:$offset,limit:20){id revision title createdAt richBody body}}', { noteId, offset })).noteRevisions;
-    return { items: values.map(value => ({ ...value, bodyJson: parseBody(value.richBody, value.body) })), nextCursor: values.length === 20 ? String(offset + 20) : null } as Page<Revision>;
+    const values = (await graphql<{ noteRevisions: { id: string; revision: number; title: string; createdAt: string; richBody: string | null; authoredBody: string | null; bodyOrigin: KnowledgeBodyOrigin; body: string }[] }>('query($noteId:UUID!,$offset:Int!){noteRevisions(noteId:$noteId,offset:$offset,limit:20){id revision title createdAt richBody body authoredBody bodyOrigin}}', { noteId, offset })).noteRevisions;
+    return { items: values.map(value => ({ ...value, bodyJson: parseBody(value.richBody, value.authoredBody ?? value.body) })), nextCursor: values.length === 20 ? String(offset + 20) : null } as Page<Revision>;
   },
   async restore(id, revision, expectedRevision) { return mapNote((await graphql<{ restoreNote: WireNote }>(`mutation($id:UUID!,$input:RestoreNoteInput!){restoreNote(id:$id,input:$input){${fields}}}`, { id, input: { sourceRevision: revision, expectedRevision, idempotencyKey: key() } })).restoreNote); },
   async comments(noteId, cursor) {

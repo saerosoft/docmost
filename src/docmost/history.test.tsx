@@ -7,8 +7,8 @@ import { NotePanels } from '../NotePanels';
 import { DocmostPaneProvider } from './DocmostPaneProvider';
 
 const body = (text: string) => ({ type: 'doc', content: [{ type: 'paragraph', content: [{ type: 'text', text }] }] });
-const note: Note = { id: 'note', spaceId: 'space', title: 'Current', revision: 7, bodyJson: body('Current'), canEdit: true, visibility: 'PRIVATE', parentId: null };
-const revisions: Revision[] = [2, 1].map(revision => ({ id: `revision-${revision}`, revision, title: `Title ${revision}`, createdAt: `2026-10-2${revision}T00:00:00Z`, bodyJson: body(revision === 2 ? 'New body' : 'Old body') }));
+const note: Note = { id: 'note', spaceId: 'space', title: 'Current', revision: 7, bodyOrigin: 'HUMAN', bodyJson: body('Current'), canEdit: true, visibility: 'PRIVATE', parentId: null };
+const revisions: Revision[] = [2, 1].map(revision => ({ id: `revision-${revision}`, revision, title: `Title ${revision}`, createdAt: `2026-10-2${revision}T00:00:00Z`, bodyOrigin: 'HUMAN', bodyJson: body(revision === 2 ? 'New body' : 'Old body') }));
 beforeEach(() => {
   Object.defineProperty(window, 'matchMedia', { configurable: true, value: vi.fn(() => ({ matches: false, addEventListener: vi.fn(), removeEventListener: vi.fn() })) });
   vi.stubGlobal('ResizeObserver', class { observe() {} unobserve() {} disconnect() {} });

@@ -31,10 +31,12 @@ number and destination IDs matched the actual approved version returned by
 the API. This checks provenance and approval plumbing, not model quality or
 production rule readiness; no provider execution profile was invented.
 
-These are change-history and authorization results. They do not establish
-that the old history list is a view of currently valid knowledge. KN-02's
-separate current-knowledge contract is being implemented in the owning
-Knowledge Engine backend.
+These are change-history and authorization results. The history list does not
+select currently valid knowledge. The later
+[current-knowledge run](current-knowledge-acceptance.md) verifies the separate
+backend projection and preserves this cohort's existing mixed documents with
+an explicit unclassified origin. A legacy history restore retains that origin
+and does not invent current membership.
 
 ```sh
 NOTE_GUI_E2E_FIXTURE=.tmp/acceptance/fixtures.json \

@@ -11,7 +11,7 @@ beforeEach(() => {
 afterEach(() => { cleanup(); });
 
 it('links each provenance record to the web application on the same host name', async () => {
-  const note: Note = { id: 'note', spaceId: 'space', title: 'Title', revision: 1, bodyJson: { type: 'doc' }, visibility: 'SPACE', parentId: null, canEdit: true };
+  const note: Note = { id: 'note', spaceId: 'space', title: 'Title', revision: 1, bodyOrigin: 'HUMAN', bodyJson: { type: 'doc' }, visibility: 'SPACE', parentId: null, canEdit: true };
   const api = {
     provenance: vi.fn().mockResolvedValue({
       sources: [{ revisionId: 'rev', spaceId: 'space', title: 'Chat' }],

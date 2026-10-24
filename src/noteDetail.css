@@ -11,7 +11,7 @@
   min-width: 0;
 }
 
-.note-document .note-accumulations {
+.note-document .note-current {
   margin-top: 24px;
   font-size: 13px;
   line-height: 1.6;
@@ -124,9 +124,58 @@
   padding: 14px 0;
 }
 
+.current-knowledge-item {
+  padding: 14px 0;
+  border-top: 1px solid #e1e8e3;
+}
+
+.current-knowledge-item > p {
+  margin: 8px 0;
+}
+
+.current-knowledge-item summary {
+  display: list-item;
+  min-height: 36px;
+  padding: 6px 0;
+  color: #52685d;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.claim-label {
+  display: inline-block;
+  padding: 2px 6px;
+  border: 1px solid #d9be80;
+  border-radius: 3px;
+  color: #765315;
+  background: #fff8e8;
+  font-size: 11px;
+}
+
+.claim-label[data-claim=CONFIRMED_FACT] {
+  color: #245547;
+  background: #edf5ef;
+  border-color: #a9c8b4;
+}
+
+.legacy-body-notice {
+  margin: 10px 0;
+  padding: 10px 12px;
+  border-left: 3px solid #ba8d36;
+  color: #765315;
+  background: #fff8e8;
+  font-size: 12px;
+}
+
 .accumulation-item h3 {
   margin: 8px 0;
   font-size: 14px;
+}
+
+.accumulation-item > details > summary {
+  padding: 4px 0;
+  min-height: 44px;
+  cursor: pointer;
 }
 
 .accumulation-heading {
@@ -199,7 +248,8 @@
 @media (pointer: coarse) {
   .context-actions > a,
   .context-actions > button,
-  .context-pagination > button {
+  .context-pagination > button,
+  .current-knowledge-item summary {
     min-height: 44px;
   }
 }

@@ -11,7 +11,7 @@ beforeEach(() => {
 });
 afterEach(() => { cleanup(); vi.unstubAllGlobals(); });
 function fixture() {
-  const note: Note = { id: 'note', spaceId: 'space', title: 'Title', revision: 4, bodyJson: { type: 'doc', content: [{ type: 'paragraph' }] }, visibility: 'PRIVATE', parentId: null, canEdit: true };
+  const note: Note = { id: 'note', spaceId: 'space', title: 'Title', revision: 4, bodyOrigin: 'HUMAN', bodyJson: { type: 'doc', content: [{ type: 'paragraph' }] }, visibility: 'PRIVATE', parentId: null, canEdit: true };
   const property: PropertyValue = { id: 'property', key: 'Owner', valueType: 'TEXT', value: 'Alice' };
   const properties = vi.fn().mockResolvedValue([property]);
   const deleteProperty = vi.fn().mockResolvedValue(undefined);
