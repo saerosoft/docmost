@@ -62,20 +62,18 @@ origin, and 200 for the configured note-client origin with a valid token.
 
 ## Remaining acceptance criteria
 
-The available local workspace has no applied accumulation records. Its real
-API verifies the authorized empty state, but populated accumulation cards,
-their actual before/after snapshots and private-evidence separation between
-different accounts still need a browser run with legitimately produced records.
-Component fixtures do not establish those criteria. A complete view of
-currently valid facts still needs validation beyond the recorded change history.
+The [populated-data run](populated-data-acceptance.md) verified actual applied
+history, before/after snapshots, original source text and private-evidence
+separation between accounts. A separate view of currently valid knowledge and
+populated applied-rule provenance still need implementation and validation.
 
-No approved Draw.io embed origin is configured locally. XML save and reopening
-can be verified without an external frame. The graphical embed and its origin
-policy still need validation against the chosen approved instance.
+The [self-hosted Draw.io run](drawio-acceptance.md) verified graphical editing,
+save, reload and re-edit, immutable attachment bytes, forged-message rejection
+and removal of an open diagram when administrator access is revoked.
 
 The later [capacity and account-access run](capacity-and-access-acceptance.md)
 verified three account sessions, live role and membership revocation, and
 bounded browser navigation and editing with one million notes. Cross-space
-moves and permission changes while populated evidence or file dialogs are
-open still require their own checks. The entire KN-02 screen remains partially
+moves and permission changes while populated evidence is open still require
+their own checks. The entire KN-02 screen remains partially
 accepted until its populated-data and current-knowledge criteria are met.
