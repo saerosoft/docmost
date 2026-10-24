@@ -38,7 +38,8 @@ export function NotePanels({ api, note, dirty, onRestore, onOpen, onRevision }: 
     try {
       await api.comment(request.noteId, request.input);
       committed = true; pendingComment.current = undefined;
-      setComments(await api.comments(request.noteId, null)); onRevision(await api.note(request.noteId));
+      const [comments, current] = await Promise.all([api.comments(request.noteId, null), api.note(request.noteId)]);
+      onRevision(current); setComments(comments);
     } catch (failure) { setError((failure as Error).message); }
     finally { setBusy(false); }
     return committed;

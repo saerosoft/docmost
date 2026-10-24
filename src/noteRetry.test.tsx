@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { MantineProvider } from '@mantine/core';
-import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { afterEach, beforeEach, expect, it, vi } from 'vitest';
 import { api } from './api';
 import type { Note, Visibility } from './model';
@@ -19,12 +19,11 @@ const note: Note = { id: 'note', spaceId: 'space', title: 'Note', revision: 1, b
 interface CreateInput { spaceId: string; title: string; body: string; visibility: Visibility; idempotencyKey: string }
 interface CommentInput { body: string; idempotencyKey: string }
 
-function server() {
+function server(loseNextResponse = true) {
   const creates: CreateInput[] = [];
   const comments: { noteId: string; input: CommentInput }[] = [];
   const savedNotes: { id: string; input: CreateInput }[] = [];
   const savedComments: { id: string; noteId: string; body: string; createdAt: string; authorName: string }[] = [];
-  let loseNextResponse = true;
   const reply = (data: object) => new Response(JSON.stringify({ data }));
   vi.stubGlobal('fetch', async (_path: string, init: RequestInit) => {
     const { query, variables } = JSON.parse(String(init.body));
@@ -66,6 +65,20 @@ async function showComments() {
   render(<MantineProvider env="test"><NotePanels api={api} note={note} dirty={false} onRestore={vi.fn()} onOpen={vi.fn()} onRevision={vi.fn()}/></MantineProvider>);
   await screen.findByText('아직 댓글이 없습니다.');
 }
+
+it('publishes a saved comment only after loading its matching note revision', async () => {
+  server(false);
+  let finish!: (value: Note) => void;
+  const read = vi.spyOn(api, 'note').mockImplementation(() => new Promise(resolve => { finish = resolve; }));
+  try {
+    await showComments();
+    await postComment('Saved before revision');
+    await waitFor(() => expect(read).toHaveBeenCalled());
+    expect(within(screen.getByRole('tabpanel', { name: '댓글 목록' })).queryByText('Saved before revision')).toBeNull();
+    finish({ ...note, revision: 2 });
+    await waitFor(() => expect(within(screen.getByRole('tabpanel', { name: '댓글 목록' })).getByText('Saved before revision')).toBeTruthy());
+  } finally { read.mockRestore(); }
+});
 async function postComment(body: string) {
   const field = screen.getByRole('textbox', { name: '댓글' });
   field.querySelector('p')!.textContent = body; fireEvent.input(field);
