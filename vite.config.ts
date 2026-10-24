@@ -5,6 +5,10 @@ import { readFile, readdir } from 'node:fs/promises';
 import { join, relative } from 'node:path';
 import type { Plugin } from 'vite';
 
+const apiOrigin = process.env.NOTE_GUI_API_ORIGIN || 'http://127.0.0.1:9086';
+const apiUrl = new URL(apiOrigin);
+if (!['http:', 'https:'].includes(apiUrl.protocol) || apiUrl.origin !== apiOrigin) throw new Error('NOTE_GUI_API_ORIGIN must be an HTTP(S) origin without credentials, a path or query.');
+
 function excalidrawFonts(): Plugin {
   const fonts = fileURLToPath(new URL('./node_modules/@excalidraw/excalidraw/dist/prod/fonts', import.meta.url));
   return { name: 'pinned-excalidraw-fonts', apply: 'build', async generateBundle() {
@@ -25,7 +29,7 @@ export default defineConfig({
   server: {
     host: '127.0.0.1', port: 9090, strictPort: true,
     watch: { ignored: ['**/.tmp/**', '**/public/source/**'] },
-    proxy: { '/graphql': 'http://127.0.0.1:9086', '/api': 'http://127.0.0.1:9086' },
+    proxy: { '/graphql': apiOrigin, '/api': apiOrigin },
   },
   build: { sourcemap: true },
   test: {

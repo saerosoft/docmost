@@ -59,7 +59,8 @@ checks that temporary and environment files stay out of the source archive;
 set Make's `PYTHON` variable to the available Python command when needed.
 
 The development server binds to `127.0.0.1:9090` and proxies `/graphql` and
-`/api` to `127.0.0.1:9086`. Start the existing Knowledge Engine API and sign in
+`/api` to `127.0.0.1:9086`. `NOTE_GUI_API_ORIGIN` can select another HTTP(S)
+API origin for an isolated acceptance run. Start the existing Knowledge Engine API and sign in
 through `http://localhost:9088`, then open `http://localhost:9090`. Use the
 same hostname for both applications so the product session cookie is shared.
 This repository does not start or provision those external services.
@@ -129,7 +130,10 @@ records. Location restoration and file access remain subject to the API's
 current authorization. Property deletion is revision checked. Tree moves can
 target another authorized space in the same organization; the API checks
 subtrees, attachment history and external relationships before accepting them.
-No million-note capacity measurement has been performed.
+The [capacity and account-access run](docs/capacity-and-access-acceptance.md)
+measured bounded navigation and revision-checked editing against one million
+notes in a separate local database, including live account permission changes.
+Its workload and hardware limits remain explicit.
 
 See [the acceptance record](docs/note-gui-acceptance.md) for the canonical
 design units, observed browser behavior and remaining checks. Passing component

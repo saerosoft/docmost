@@ -16,9 +16,10 @@ export default defineConfig({
   outputDir: '.tmp/playwright-results',
   reporter: [['list'], ['json', { outputFile: '.tmp/playwright-results.json' }]],
   use: {
-    baseURL: 'http://localhost:9090',
+    baseURL: process.env.NOTE_GUI_E2E_BASE_URL || 'http://localhost:9090',
     browserName: 'chromium',
     channel: process.env.NOTE_GUI_E2E_CHANNEL,
+    launchOptions: { args: process.env.NOTE_GUI_E2E_DRAWIO_SPKI ? [`--ignore-certificate-errors-spki-list=${process.env.NOTE_GUI_E2E_DRAWIO_SPKI}`] : [] },
     headless: true,
     actionTimeout: 15_000,
     storageState: process.env.NOTE_GUI_E2E_STORAGE_STATE,

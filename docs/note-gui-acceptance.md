@@ -46,7 +46,7 @@ GraphQL projections used by these panels.
 
 ## Observed local result
 
-On 2026-10-24, the standalone client passed 101 tests across 20 Vitest files,
+On 2026-10-24, the initial standalone client passed 101 tests across 20 Vitest files,
 the source-archive regression test and all four real-API browser scenarios.
 The browser run used installed Chrome on Linux at 1600 by 1000 pixels and a
 390 by 844 pixel viewport. It confirmed structured saves and revision conflicts
@@ -73,8 +73,9 @@ No approved Draw.io embed origin is configured locally. XML save and reopening
 can be verified without an external frame. The graphical embed and its origin
 policy still need validation against the chosen approved instance.
 
-Cross-space moves, live access revocation between different accounts,
-representative large trees and million-note capacity have not been accepted
-by this browser run. Existing bounded-query and access-state tests support
-those mechanisms but do not replace these live checks. The entire KN-02
-screen remains partially accepted until its populated-data criteria are met.
+The later [capacity and account-access run](capacity-and-access-acceptance.md)
+verified three account sessions, live role and membership revocation, and
+bounded browser navigation and editing with one million notes. Cross-space
+moves and permission changes while populated evidence or file dialogs are
+open still require their own checks. The entire KN-02 screen remains partially
+accepted until its populated-data and current-knowledge criteria are met.
