@@ -42,6 +42,9 @@ it('moves a dragged note under the note it is dropped on', async () => {
   await screen.findByRole('treeitem', { name: 'Alpha' });
   drag(row('Alpha'), row('Beta'));
   await waitFor(() => expect(value.move).toHaveBeenCalledExactlyOnceWith(['note-0'], 'note-1', 'space'));
+  const destination = await screen.findByRole('link', { name: '이동한 공간에서 열기' });
+  expect(destination.getAttribute('href')).toBe('/?space=space&note=note-0');
+  expect(destination.getAttribute('target')).toBe('_blank');
 });
 
 it('moves the whole selection when a selected note is dragged to the root', async () => {

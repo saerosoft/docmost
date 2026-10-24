@@ -73,7 +73,9 @@ and removal of an open diagram when administrator access is revoked.
 
 The later [capacity and account-access run](capacity-and-access-acceptance.md)
 verified three account sessions, live role and membership revocation, and
-bounded browser navigation and editing with one million notes. Cross-space
-moves and permission changes while populated evidence is open still require
-their own checks. The entire KN-02 screen remains partially
+bounded browser navigation and editing with one million notes. The
+[move and document run](move-and-large-document-acceptance.md) also verified
+private subtree moves, retained pane drafts, a 1,000-paragraph document and a
+20 MiB attachment download. Populated evidence revocation passed separately.
+The entire KN-02 screen remains partially
 accepted until its populated-data and current-knowledge criteria are met.

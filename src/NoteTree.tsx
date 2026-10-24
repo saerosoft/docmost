@@ -17,6 +17,7 @@ export function NoteTree({ api, spaceId, activeNoteId, onOpen }: Props) {
   const [selected, setSelected] = useState<string[]>([]);
   const [destination, setDestination] = useState<NoteSummary | null>(null);
   const [moveSpace, setMoveSpace] = useState(spaceId);
+  const [moved, setMoved] = useState<{ id: string; spaceId: string } | null>(null);
   const [spaces, setSpaces] = useState<{ id: string; name: string }[]>([]);
   const [title, setTitle] = useState('');
   const [visibility, setVisibility] = useState<Visibility>('SPACE');
@@ -36,15 +37,16 @@ export function NoteTree({ api, spaceId, activeNoteId, onOpen }: Props) {
     const changed = () => { cache.current.clear(); setLocated(null); setLocateAttempt(value => value + 1); setReload(value => value + 1); };
     window.addEventListener('note-changed', changed); return () => window.removeEventListener('note-changed', changed);
   }, []);
-  useEffect(() => onAccessLost(() => { epoch.current++; cache.current.clear(); setPage({ items: [], nextCursor: null }); setSelected([]); setAncestors([]); setLocated(null); setLocating(false); }), []);
+  useEffect(() => onAccessLost(() => { epoch.current++; cache.current.clear(); setPage({ items: [], nextCursor: null }); setSelected([]); setAncestors([]); setLocated(null); setLocating(false); setMoved(null); }), []);
   useEffect(() => onAccessRefresh(async () => {
     const start = ++epoch.current;
+    setMoved(null);
     cache.current.clear(); setPage({ items: [], nextCursor: null }); setSelected([]); setAncestors([]); setDestination(null); setDragging([]); setDropTarget(null);
     setLocated(null); setLocateAttempt(value => value + 1); setReload(value => value + 1);
     const current = await api.spaces();
     if (start === epoch.current) setSpaces(current);
   }), [api]);
-  useEffect(() => { setParentId(null); setAncestors([]); setCursor(null); setPrevious([]); setSelected([]); setMoveSpace(spaceId); setDestination(null); cache.current.clear(); }, [spaceId]);
+  useEffect(() => { setParentId(null); setAncestors([]); setCursor(null); setPrevious([]); setSelected([]); setMoveSpace(spaceId); setDestination(null); setMoved(null); cache.current.clear(); }, [spaceId]);
   useEffect(() => { let alive = true; api.spaces().then(value => { if (alive) setSpaces(value); }).catch(e => { if (alive) setError(e.message); }); return () => { alive = false; }; }, [api]);
   useEffect(() => {
     let alive = true; const start = epoch.current;
@@ -74,7 +76,13 @@ export function NoteTree({ api, spaceId, activeNoteId, onOpen }: Props) {
   function dropMove(parent: string | null) {
     const ids = dragging; setDragging([]); setDropTarget(null);
     if (!ids.length || (parent !== null && ids.includes(parent))) return;
-    void perform(async () => { await api.move(ids, parent, spaceId); setSelected([]); });
+    void perform(() => move(ids, parent, spaceId));
+  }
+  async function move(ids: string[], parent: string | null, targetSpace: string) {
+    const start = epoch.current; setMoved(null);
+    await api.move(ids, parent, targetSpace);
+    if (start !== epoch.current) return;
+    setSelected([]); setDestination(null); setMoved({ id: ids[0], spaceId: targetSpace });
   }
   function dropZone(key: string, parent: string | null) {
     return {
@@ -113,7 +121,7 @@ export function NoteTree({ api, spaceId, activeNoteId, onOpen }: Props) {
         const ids = selected.includes(id) ? selected : [id];
         if (op.kind !== 'make-child' || ids.includes(op.targetId)) return;
         setBusy(true); setError('');
-        try { await api.move(ids, op.targetId, spaceId); setSelected([]); cache.current.clear(); setReload(value => value + 1); }
+        try { await move(ids, op.targetId, spaceId); cache.current.clear(); setReload(value => value + 1); }
         catch (failure) { setError((failure as Error).message); throw failure; }
         finally { setBusy(false); }
       }} onToggle={id => { const node = page.items.find(value => value.id === id); if (node) descend(node); }}
@@ -122,11 +130,12 @@ export function NoteTree({ api, spaceId, activeNoteId, onOpen }: Props) {
     {!page.items.length && !busy && !locating && !locationError && <p>이 경로에 노트가 없습니다.</p>}
     <Group justify="space-between"><Button size="xs" disabled={!previous.length || busy || locating} onClick={() => { setCursor(previous.at(-1) || null); setPrevious(values => values.slice(0, -1)); }}>이전</Button><Button size="xs" disabled={!page.nextCursor || busy || locating} onClick={() => { setPrevious(values => [...values.slice(-30), cursor]); setCursor(page.nextCursor); }}>다음</Button></Group>
     <form onSubmit={event => { event.preventDefault(); void create(); }}><Select label="공유 범위" value={visibility} disabled={busy || locating} data={[{value:"SPACE",label:"공간 공유"},{value:"PRIVATE",label:"나만 보기"}]} onChange={value => setVisibility(value === "PRIVATE" ? "PRIVATE" : "SPACE")}/><TextInput label="새 노트 제목" value={title} disabled={busy || locating} required maxLength={300} onChange={event => setTitle(event.currentTarget.value)}/>{parentId && <p>새 노트는 루트에 만든 뒤 이동할 수 있습니다.</p>}<Button type="submit" size="xs" disabled={busy || locating || !title.trim() || parentId !== null}>현재 경로에 만들기</Button></form>
-    <details><summary>선택한 노트 이동 · {selected.length}</summary><form onSubmit={event => { event.preventDefault(); if (destination && selected.includes(destination.id)) { setError('선택한 노트를 자기 하위로 이동할 수 없습니다.'); return; } void perform(async () => { await api.move(selected, destination?.id ?? null, moveSpace); setSelected([]); setDestination(null); }); }}>
+    <details><summary>선택한 노트 이동 · {selected.length}</summary><form onSubmit={event => { event.preventDefault(); if (destination && selected.includes(destination.id)) { setError('선택한 노트를 자기 하위로 이동할 수 없습니다.'); return; } void perform(() => move(selected, destination?.id ?? null, moveSpace)); }}>
       <Select label="대상 공간" data={spaces.map(value => ({ value: value.id, label: value.name }))} value={moveSpace} disabled={busy} onChange={value => { if (value) { setMoveSpace(value); setDestination(null); } }}/>
       <NotePicker api={api} spaceId={moveSpace} label="대상 상위 노트 (선택하지 않으면 루트)" selected={destination} onSelect={setDestination} exclude={selected} disabled={busy}/>
       <p>노트를 끌어 다른 노트 위에 놓으면 그 아래로, 루트·상위 버튼에 놓으면 그 위치로 이동합니다. 선택한 노트를 끌면 선택한 노트 전체가 이동합니다.</p>
       <p>선택한 노트와 모든 하위 노트를 함께 이동합니다. 같은 조직의 다른 공간을 선택할 수 있으며, 공유 범위와 개인 소유자는 유지됩니다. 첨부 이력이나 트리 밖의 연결이 있으면 전체 이동이 거절됩니다.</p><Button type="submit" disabled={!selected.length || busy}>선택 노트 이동</Button>
     </form></details>
+    {moved && <p role="status">노트를 이동했습니다. <a href={`/?${new URLSearchParams({ space: moved.spaceId, note: moved.id })}`} target="_blank" rel="noreferrer">이동한 공간에서 열기</a></p>}
   </nav>;
 }
