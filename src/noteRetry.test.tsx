@@ -58,9 +58,19 @@ async function showTree(spaceId = 'space') {
   await screen.findByText('이 경로에 노트가 없습니다.');
   return view;
 }
-function createNote(title: string) {
-  fireEvent.change(screen.getByRole('textbox', { name: '새 노트 제목' }), { target: { value: title } });
-  fireEvent.click(screen.getByRole('button', { name: '현재 경로에 만들기' }));
+async function createNote(title: string) {
+  const field = await waitFor(() => {
+    const textbox = screen.getByRole('textbox', { name: '새 노트 제목' });
+    expect(textbox.getAttribute('disabled')).toBeNull();
+    return textbox;
+  });
+  fireEvent.change(field, { target: { value: title } });
+  const submit = await waitFor(() => {
+    const button = screen.getByRole('button', { name: '현재 경로에 만들기' });
+    expect(button.getAttribute('disabled')).toBeNull();
+    return button;
+  });
+  fireEvent.click(submit);
 }
 async function showComments() {
   render(<MantineProvider env="test"><NotePanels api={api} note={note} dirty={false} onRestore={vi.fn()} onOpen={vi.fn()} onRevision={vi.fn()}/></MantineProvider>);
@@ -95,7 +105,7 @@ it('retries a committed private note with the same request and starts a new requ
   const value = server(); await showTree();
   fireEvent.click(screen.getByRole('combobox', { name: '공유 범위' }));
   fireEvent.click(await screen.findByRole('option', { name: '나만 보기' }));
-  createNote('Private title');
+  await createNote('Private title');
   await screen.findByRole('alert');
   expect((screen.getByRole('textbox', { name: '새 노트 제목' }) as HTMLInputElement).value).toBe('Private title');
   fireEvent.click(screen.getByRole('button', { name: '현재 경로에 만들기' }));
@@ -104,7 +114,7 @@ it('retries a committed private note with the same request and starts a new requ
   expect(value.creates).toHaveLength(2);
   expect(value.creates[1]).toEqual(value.creates[0]);
   expect(value.creates[0].visibility).toBe('PRIVATE');
-  createNote('Private title');
+  await createNote('Private title');
   await waitFor(() => expect(value.creates).toHaveLength(3));
   expect(value.savedNotes).toHaveLength(2);
   expect(value.creates[2].idempotencyKey).not.toBe(value.creates[0].idempotencyKey);
@@ -112,10 +122,10 @@ it('retries a committed private note with the same request and starts a new requ
 
 it('uses a new creation identity when the member deliberately replaces the title and visibility', async () => {
   const value = server(); await showTree();
-  createNote('First title'); await screen.findByRole('alert');
+  await createNote('First title'); await screen.findByRole('alert');
   fireEvent.click(screen.getByRole('combobox', { name: '공유 범위' }));
   fireEvent.click(await screen.findByRole('option', { name: '나만 보기' }));
-  createNote('Replacement title');
+  await createNote('Replacement title');
   await waitFor(() => expect(value.creates).toHaveLength(2));
   expect(value.savedNotes.map(value => [value.input.title, value.input.visibility])).toEqual([['First title', 'SPACE'], ['Replacement title', 'PRIVATE']]);
   expect(value.creates[1].idempotencyKey).not.toBe(value.creates[0].idempotencyKey);
@@ -123,7 +133,7 @@ it('uses a new creation identity when the member deliberately replaces the title
 
 it('does not replay a failed creation into a different space', async () => {
   const value = server(); const view = await showTree();
-  createNote('Title'); await screen.findByRole('alert');
+  await createNote('Title'); await screen.findByRole('alert');
   view.rerender(<MantineProvider env="test"><NoteTree api={api} spaceId="other" activeNoteId={null} onOpen={vi.fn()}/></MantineProvider>);
   await waitFor(() => expect(screen.queryByRole('status')).toBeNull());
   fireEvent.click(screen.getByRole('button', { name: '현재 경로에 만들기' }));
