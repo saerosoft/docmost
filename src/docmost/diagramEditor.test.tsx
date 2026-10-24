@@ -56,6 +56,12 @@ it('rejects Draw.io messages from another origin or window and accepts the appro
   vi.stubEnv('VITE_DRAWIO_ORIGIN', 'https://drawio.example.test');
   const value = client(); render(show('drawio', value)); await openDrawio();
   const frame = await screen.findByTitle<HTMLIFrameElement>('Draw.io editor');
+  expect(screen.getByRole<HTMLTextAreaElement>('textbox', { name: 'Draw.io XML' }).readOnly).toBe(true);
+  const url = new URL(frame.src);
+  expect(url.searchParams.get('stealth')).toBe('1');
+  expect(url.searchParams.get('pwa')).toBe('0');
+  expect(url.searchParams.get('plugins')).toBe('0');
+  expect(url.searchParams.get('drafts')).toBe('0');
   act(() => { window.dispatchEvent(new MessageEvent('message', { origin: 'https://wrong.example.test', source: frame.contentWindow, data: JSON.stringify({ event: 'save', xml: changedXml }) })); });
   act(() => { window.dispatchEvent(new MessageEvent('message', { origin: 'https://drawio.example.test', source: window, data: JSON.stringify({ event: 'save', xml: changedXml }) })); });
   expect(value.upload).not.toHaveBeenCalled();
