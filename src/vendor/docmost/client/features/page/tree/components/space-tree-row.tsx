@@ -6,13 +6,13 @@ import classes from "../styles/tree.module.css";
 
 type Props = RenderRowProps<TreeNote> & {
   checked: boolean;
-  onCheck: () => void;
+  onCheck?: () => void;
   onOpen: (id: string) => void;
 };
 
 export function SpaceTreeRow({ node, isOpen, hasChildren, toggleOpen, rowRef, tabIndex, treeItemProps, checked, onCheck, onOpen }: Props) {
   return <div className="tree-row">
-    <Checkbox aria-label={`${node.title} 선택`} checked={checked} onChange={onCheck}/>
+    <Checkbox aria-label={`${node.title} 선택`} checked={checked} onChange={onCheck} disabled={!onCheck}/>
     <div ref={element => { if (typeof rowRef === "function") rowRef(element); else if (rowRef) rowRef.current = element; }}
       className={classes.node} tabIndex={tabIndex} {...treeItemProps} onClick={() => onOpen(node.id)}
       onKeyDown={event => { if (event.key === "Enter") onOpen(node.id); }}>

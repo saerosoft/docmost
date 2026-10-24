@@ -7,7 +7,7 @@ export interface Note {
 }
 export interface TreeNote { id: string; title: string; parentId: string | null; hasChildren: boolean; revision: number }
 export interface Page<T> { items: T[]; nextCursor: string | null }
-export interface Space { id: string; name: string; accessEpoch: number }
+export interface Space { id: string; name: string; accessEpoch: number; myRole: 'OWNER' | 'EDITOR' | 'VIEWER' }
 export interface NoteSummary { id: string; title: string }
 export interface Revision { id: string; revision: number; title: string; createdAt: string; bodyJson: JSONContent }
 export interface Comment { id: string; body: string; createdAt: string; authorName: string }

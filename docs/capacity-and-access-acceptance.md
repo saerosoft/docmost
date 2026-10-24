@@ -68,6 +68,14 @@ about 31 seconds. Removing space membership likewise cleared both panes and
 their cached private draft. Direct API reads were denied after each change.
 These cases did not mock network responses or replace the permission service.
 
+A later live demotion from editor to viewer retained the still-readable draft
+and disabled body editing and saving. The tree now reads the API's effective
+`myRole`, removes creation and movement controls, disables bulk selection and
+dragging, and offers only writable destination spaces. A direct save attempt
+from the viewer was denied and the stored note remained unchanged. Both the
+component and real-API tests reproduced the former tree-control gap before
+the fix.
+
 ## Repeating the browser checks
 
 The owning backend prepares the isolated data and session files. It supplies

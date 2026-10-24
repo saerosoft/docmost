@@ -59,7 +59,7 @@ export default function DrawioView(props: NodeViewProps) {
       <Modal.Overlay/><Modal.Content><Modal.Header><Modal.Title>Draw.io</Modal.Title><Modal.CloseButton aria-label="Draw.io 닫기" disabled={stored.busy}/></Modal.Header>
         <Modal.Body pos="relative"><LoadingOverlay visible={stored.busy}/>
           {origin ? <><Text size="xs">이 편집기를 열면 다이어그램 원문이 승인된 {origin} 주소로 전달됩니다.</Text>
-            <iframe ref={frame} title="Draw.io editor" src={`${origin}/?embed=1&proto=json&spin=1&libraries=1&stealth=1&pwa=0&plugins=0&drafts=0&ui=${computedColorScheme === "light" ? "kennedy" : "dark"}`}
+            <iframe ref={frame} title="Draw.io editor" src={`${origin}/?embed=1&proto=json&spin=1&libraries=1&stealth=1&pwa=0&plugins=0&drafts=0&chrome=${stored.editable ? '1' : '0'}&ui=${computedColorScheme === "light" ? "kennedy" : "dark"}`}
               sandbox="allow-scripts allow-same-origin allow-downloads" style={{ width: "100%", height: "70vh", border: 0 }}/></>
             : <Text>Draw.io 편집기 주소가 설정되지 않았습니다. XML 원문을 편집할 수 있습니다.</Text>}
           <Textarea label="Draw.io XML" value={initialXML} readOnly={!!origin || !stored.editable || stored.busy} autosize minRows={8}

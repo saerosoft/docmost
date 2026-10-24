@@ -3,6 +3,7 @@ import { MantineProvider } from '@mantine/core';
 import { act, cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, beforeEach, expect, it, vi } from 'vitest';
 import { App } from './App';
+import type { Space } from './model';
 
 beforeEach(() => {
   vi.useFakeTimers();
@@ -24,13 +25,13 @@ function server() {
   const folder = { id: 'folder', title: 'Cached folder', parentId: null, revision: 1 };
   const child = { id: 'child', title: 'Cached child', parentId: 'folder', revision: 1 };
   const state: {
-    spaces: { id: string; name: string; accessEpoch: number }[];
+    spaces: Space[];
     spacesFailure: boolean;
     canEdit: boolean;
-    pendingSpaces?: Promise<{ id: string; name: string; accessEpoch: number }[]>;
+    pendingSpaces?: Promise<Space[]>;
     pendingTree?: Promise<(typeof folder | typeof child)[]>;
   } = {
-    spaces: [{ id: 'space', name: 'Space', accessEpoch: 1 }],
+    spaces: [{ id: 'space', name: 'Space', accessEpoch: 1, myRole: 'OWNER' }],
     spacesFailure: false,
     canEdit: true,
   };
@@ -137,7 +138,7 @@ it('refreshes current note permissions after an epoch change while preserving an
   await settle();
   fireEvent.input(screen.getByRole('textbox', { name: '노트 제목' }), { target: { innerHTML: '<h1>Unsaved permitted title</h1>' } });
   const initialReads = value.reads.note;
-  value.state.spaces = [{ id: 'space', name: 'Space', accessEpoch: 2 }];
+  value.state.spaces = [{ id: 'space', name: 'Space', accessEpoch: 2, myRole: 'OWNER' }];
   value.state.canEdit = false;
   value.folder.title = 'Remotely changed server title';
 

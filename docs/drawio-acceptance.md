@@ -1,6 +1,6 @@
 # Self-hosted Draw.io acceptance
 
-On 2026-10-24, the real-API Chrome suite passed both scenarios in
+On 2026-10-24, the real-API Chrome suite initially passed both write/revocation scenarios in
 `e2e/drawio.spec.ts` against an isolated API, account sessions and storage.
 The graphical editor was the official Draw.io v32.6.1 static web application,
 commit `84487b4891cbc0f32d7e30f34cf878c87cb1f414`, served over HTTPS on
@@ -35,6 +35,12 @@ editor, the next actual access poll removed the iframe, XML, note and draft.
 A direct download of the former attachment was denied. This verifies the
 application's periodic revocation handling; it is not an instantaneous push
 notification or a guarantee that previously downloaded bytes can be recalled.
+
+The later viewer scenario opened a shared diagram with `chrome=0`, the
+upstream's graphical read-only viewer. Double-clicking its text did not open
+an editor, and no embedded Save action was present. The XML and application
+save control were read-only. The API allowed the original download and denied
+a new attachment upload from that account.
 
 Run against a prepared, isolated real-API fixture and approved embed:
 

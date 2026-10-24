@@ -83,6 +83,16 @@ it('retains XML and attachment identity when validation or upload fails', async 
   expect(editor?.getJSON().content?.[0].attrs?.fileId).toBe('original-file');
 });
 
+it('opens the approved embed as a read-only viewer without write authority', async () => {
+  vi.stubEnv('VITE_DRAWIO_ORIGIN', 'https://drawio.example.test');
+  const value = client(); render(show('drawio', value, false)); await openDrawio();
+  const frame = await screen.findByTitle<HTMLIFrameElement>('Draw.io editor');
+  expect(new URL(frame.src).searchParams.get('chrome')).toBe('0');
+  expect(screen.getByRole<HTMLTextAreaElement>('textbox', { name: 'Draw.io XML' }).readOnly).toBe(true);
+  act(() => { window.dispatchEvent(new MessageEvent('message', { origin: 'https://drawio.example.test', source: frame.contentWindow, data: JSON.stringify({ event: 'save', xml: changedXml }) })); });
+  expect(value.upload).not.toHaveBeenCalled();
+});
+
 it.each(['read-only', 'revoked'] as const)('ignores a completed diagram upload after %s access replaces write authority', async mode => {
   const value = client(); let complete!: (attachment: { attachmentId: string }) => void;
   value.upload.mockImplementation(() => new Promise(resolve => { complete = resolve; }));

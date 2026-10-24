@@ -26,7 +26,7 @@ async function mapNote(value: WireNote): Promise<Note> {
 }
 function page<T>(items: T[], cursor: (value: T) => string, size: number): Page<T> { return { items, nextCursor: items.length === size ? cursor(items[items.length - 1]) : null }; }
 export const api: NoteApi = {
-  async spaces() { return (await graphql<{ spaces: Space[] }>('query { spaces { id name accessEpoch } }')).spaces; },
+  async spaces() { return (await graphql<{ spaces: Space[] }>('query { spaces { id name accessEpoch myRole } }')).spaces; },
   async tree(spaceId, parentId, cursor) {
     const values = (await graphql<{ noteTree: { id: string; title: string; parentId: string | null; revision: number }[] }>('query($spaceId:UUID!,$parentId:UUID,$after:UUID){noteTree(spaceId:$spaceId,parentId:$parentId,after:$after,limit:50){id title parentId revision}}', { spaceId, parentId, after: cursor })).noteTree;
     return page<TreeNote>(values.map(value => ({ ...value, hasChildren: true })), value => value.id, 50);

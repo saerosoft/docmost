@@ -33,7 +33,7 @@ export async function graphql<T>(request: APIRequestContext, query: string, vari
   return result.data!;
 }
 
-export async function role(request: APIRequestContext, accountId: string, value: 'OWNER' | 'EDITOR' | null) {
+export async function role(request: APIRequestContext, accountId: string, value: 'OWNER' | 'EDITOR' | 'VIEWER' | null) {
   const result = await graphql<{ setSpaceMember: boolean }>(request, 'mutation($space:UUID!,$account:UUID!,$role:SpaceRole){setSpaceMember(spaceId:$space,accountId:$account,role:$role)}', { space: fixture!.space, account: accountId, role: value });
   expect(result.setSpaceMember).toBe(true);
 }

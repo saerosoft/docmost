@@ -116,3 +116,24 @@ test('removes an open graphical attachment after administrator access is revoked
     expect([403, 404]).toContain((await peer.request.get(`/api/files/${created.fileId}`)).status());
   } finally { await role(owner.request, fixture!.peer, 'EDITOR'); await archive(owner.request, created.id); await Promise.all([owner.close(), peer.close()]); }
 });
+
+test('shows a shared diagram to a viewer without graphical editing or file writes', async ({ browser }) => {
+  const owner = await account(browser, 'owner');
+  const peer = await account(browser, 'peer');
+  const created = await create(owner.request, 'SPACE');
+  try {
+    await role(owner.request, fixture!.peer, 'VIEWER');
+    const page = await peer.newPage();
+    await page.goto(`/?space=${fixture!.space}&note=${created.id}`);
+    const frame = await open(page, 'Original graphical shape');
+    await frame.getByText('Original graphical shape', { exact: true }).dblclick();
+    await expect(frame.locator('.mxCellEditor[contenteditable="true"]')).toHaveCount(0);
+    await expect(frame.getByText('Save', { exact: true })).toHaveCount(0);
+    await expect(page.getByRole('button', { name: '첨부 개정 저장 후 노트에 적용', exact: true })).toBeDisabled();
+    const csrf = await (await peer.request.get('/api/csrf')).json();
+    const denied = await peer.request.post('/api/files', { headers: { 'X-XSRF-TOKEN': csrf.token }, multipart: { noteId: created.id, spaceId: fixture!.space, visibility: 'SPACE', file: { name: 'unauthorized.drawio', mimeType: 'application/octet-stream', buffer: Buffer.from(initial) } } });
+    expect(denied.status()).toBe(403);
+    expect(await (await peer.request.get(`/api/files/${created.fileId}`)).text()).toBe(initial);
+    await page.screenshot({ path: '.tmp/browser/drawio-read-only.png', fullPage: true });
+  } finally { await role(owner.request, fixture!.peer, 'EDITOR'); await archive(owner.request, created.id); await Promise.all([owner.close(), peer.close()]); }
+});

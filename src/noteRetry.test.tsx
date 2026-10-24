@@ -46,7 +46,7 @@ function server(loseNextResponse = true) {
     if (query.includes('noteComments')) return reply({ noteComments: savedComments.filter(value => value.noteId === variables.noteId) });
     if (query.includes('knowledgeNote(')) return reply({ knowledgeNote: { ...note, id: variables.id, ownerId: 'owner', richBody: null, body: '', revision: 1 + savedComments.length } });
     if (query.includes('noteTree')) return reply({ noteTree: [] });
-    if (query.includes('spaces')) return reply({ spaces: [{ id: 'space', name: 'Space', accessEpoch: 1 }, { id: 'other', name: 'Other', accessEpoch: 1 }] });
+    if (query.includes('spaces')) return reply({ spaces: [{ id: 'space', name: 'Space', accessEpoch: 1, myRole: 'OWNER' }, { id: 'other', name: 'Other', accessEpoch: 1, myRole: 'OWNER' }] });
     throw new Error(`Unexpected GraphQL operation: ${query}`);
   });
   return { creates, comments, savedNotes, savedComments };

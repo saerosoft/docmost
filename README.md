@@ -79,6 +79,8 @@ the browser's Origin and the API's CSRF checks.
 Draw.io frame loads unless configured. Without an embed, XML is editable;
 with an embed, the XML view follows graphical edits and is read-only to avoid
 two editors overwriting each other's drafts. The
+API's read-only permission selects the graphical viewer instead of the editor.
+The
 Excalidraw editor and its pinned fonts run locally. Preserve the SDK patch
 that removes automatic font CDN fallback. Mermaid uses strict, sanitized SVG.
 A diagram upload creates a file revision; save the note to commit its reference.

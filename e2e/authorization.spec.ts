@@ -72,3 +72,26 @@ test('clears both panes and cached private content when current space membership
     await Promise.all([owner.close(), peer.close()]);
   }
 });
+
+test('keeps readable drafts while disabling writes after demotion to viewer', async ({ browser }) => {
+  const owner = await account(browser, 'owner');
+  const peer = await account(browser, 'peer');
+  try {
+    const page = await peer.newPage();
+    await page.goto(`/?space=${fixture!.space}&note=${fixture!.sharedNote}`);
+    const body = page.getByRole('textbox', { name: '노트 본문', exact: true });
+    await body.fill('Readable but no longer writable draft.');
+    await role(owner.request, fixture!.peer, 'VIEWER');
+    await expect(body).toHaveAttribute('contenteditable', 'false', { timeout: 45_000 });
+    await expect(body).toHaveText('Readable but no longer writable draft.');
+    await expect(page.getByRole('button', { name: '저장', exact: true })).toBeDisabled();
+    await expect(page.getByLabel('새 노트 제목', { exact: false })).toHaveCount(0);
+    await expect(page.getByRole('checkbox').first()).toBeDisabled();
+    const original = await graphql<{ knowledgeNote: { revision: number; body: string } }>(owner.request, noteQuery, { id: fixture!.sharedNote });
+    const denied = await response(peer.request, 'mutation($id:UUID!,$input:SaveRichNoteInput!){saveRichNote(id:$id,input:$input){id}}', { id: fixture!.sharedNote, input: { expectedRevision: original.knowledgeNote.revision, title: 'Unauthorized edit', richBody: JSON.stringify({ type: 'doc', content: [{ type: 'paragraph' }] }), schemaVersion: 1, idempotencyKey: crypto.randomUUID() } });
+    expect(denied.errors?.length).toBeGreaterThan(0);
+    const unchanged = await graphql<{ knowledgeNote: { revision: number; body: string } }>(owner.request, noteQuery, { id: fixture!.sharedNote });
+    expect(unchanged.knowledgeNote).toEqual(original.knowledgeNote);
+    await page.screenshot({ path: '.tmp/browser/viewer-read-only.png', fullPage: true });
+  } finally { await role(owner.request, fixture!.peer, 'EDITOR'); await Promise.all([owner.close(), peer.close()]); }
+});

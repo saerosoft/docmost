@@ -14,10 +14,10 @@ afterEach(() => { cleanup(); vi.unstubAllGlobals(); });
 
 const notes: TreeNote[] = ['Alpha', 'Beta', 'Gamma'].map((title, index) => ({ id: `note-${index}`, title, parentId: null, hasChildren: true, revision: 1 }));
 
-function show() {
+function show(myRole = 'OWNER') {
   const move = vi.fn().mockResolvedValue(undefined);
   const api = {
-    spaces: vi.fn().mockResolvedValue([{ id: 'space', name: 'Space', accessEpoch: 1 }]),
+    spaces: vi.fn().mockResolvedValue([{ id: 'space', name: 'Space', accessEpoch: 1, myRole }]),
     tree: vi.fn().mockResolvedValue({ items: notes, nextCursor: null }),
     findNotes: vi.fn().mockResolvedValue([{ id: 'note-0', title: 'Alpha' }, { id: 'note-1', title: 'Beta' }]),
     move,
@@ -94,4 +94,15 @@ it('keeps a paged subtree bounded when a bulk-expand key cannot represent siblin
   fireEvent.keyDown(first, { key: 'ArrowRight' });
   await waitFor(() => expect(value.tree).toHaveBeenLastCalledWith('space', 'note-0', null));
   expect(value.tree).toHaveBeenCalledTimes(2);
+});
+
+it('keeps viewer navigation available without offering note creation or movement', async () => {
+  const value = show('VIEWER');
+  await screen.findByRole('treeitem', { name: 'Alpha' });
+  expect(screen.queryByRole('textbox', { name: '새 노트 제목' })).toBeNull();
+  expect(screen.getByRole<HTMLInputElement>('checkbox', { name: 'Alpha 선택' }).disabled).toBe(true);
+  drag(row('Alpha'), row('Beta'));
+  expect(value.move).not.toHaveBeenCalled();
+  fireEvent.keyDown(row('Alpha'), { key: 'ArrowRight' });
+  await waitFor(() => expect(value.tree).toHaveBeenLastCalledWith('space', 'note-0', null));
 });

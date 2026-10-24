@@ -58,7 +58,7 @@ function server() {
       const offset = variables.after ? siblings.findIndex(value => value.id === variables.after) + 1 : 0;
       return reply({ noteTree: siblings.slice(offset, offset + limit) });
     }
-    if (query.includes('spaces')) return reply({ spaces: [{ id: 'space', name: 'Space', accessEpoch: 1 }] });
+    if (query.includes('spaces')) return reply({ spaces: [{ id: 'space', name: 'Space', accessEpoch: 1, myRole: 'OWNER' }] });
     throw new Error(`Unexpected GraphQL operation: ${query}`);
   });
   return {
