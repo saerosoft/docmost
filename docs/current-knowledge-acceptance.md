@@ -81,7 +81,7 @@ stale proposal with `CONFLICT`; human and legacy GUI restores retained their
 respective origins and independent current membership.
 
 Direct current-item reads denied a private note's non-owner, an editor
-without administrator access and an account from another organization. A live
+without administrator access and an account without space membership. A live
 demotion removed already-open administrator evidence on the next access poll.
 The approved rule link matched the actual pinned version, and the current
 25-item cohort paged as 20/five with no merged or missing entries.

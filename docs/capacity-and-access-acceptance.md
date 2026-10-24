@@ -60,6 +60,10 @@ Three separate browser sessions represented an owner, an editor and an account
 without membership. The editor could read shared content and its own private
 note, but could not read the owner's private note or administrator content.
 The unrelated account could not read the shared note.
+The note picker's title lookup also excluded the owner's private note and
+administrator note, retained the editor's own private note, and rejected the
+account without space membership. This checks the client's bounded database
+lookup, separately from search-engine indexing.
 
 After promoting the editor to administrator, the test opened an administrator
 note and changed its draft without saving. A real API role demotion removed

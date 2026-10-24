@@ -16,6 +16,16 @@ test('isolates owner-private, administrator and shared notes across three real s
     await expect(page.getByRole('treeitem', { name: 'Acceptance owner private note', exact: true })).toHaveCount(0);
     await expect(page.getByRole('treeitem', { name: 'Acceptance administrator note', exact: true })).toHaveCount(0);
     await expect(page.getByRole('treeitem', { name: 'Acceptance peer private note', exact: true })).toBeVisible();
+    const lookup = 'query($spaceId:UUID!,$query:String){knowledgeNotes(spaceId:$spaceId,query:$query,offset:0,limit:20){id title}}';
+    for (const query of ['Acceptance owner private note', 'Acceptance administrator note']) {
+      const hidden = await graphql<{ knowledgeNotes: { id: string; title: string }[] }>(peer.request, lookup, { spaceId: fixture!.space, query });
+      expect(hidden.knowledgeNotes).toEqual([]);
+    }
+    const own = await graphql<{ knowledgeNotes: { id: string }[] }>(peer.request, lookup, { spaceId: fixture!.space, query: 'Acceptance peer private note' });
+    expect(own.knowledgeNotes.map(note => note.id)).toEqual([fixture!.peerPrivateNote]);
+    const outside = await response(outsider.request, lookup, { spaceId: fixture!.space, query: 'Acceptance shared note' });
+    expect(outside.errors?.length).toBeGreaterThan(0);
+    expect(outside.data).toBeNull();
     for (const id of [fixture!.privateNote, fixture!.administratorNote]) {
       const denied = await response<{ knowledgeNote: unknown }>(peer.request, noteQuery, { id });
       expect(denied.data?.knowledgeNote).toBeNull();
