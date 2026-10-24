@@ -81,7 +81,11 @@ it('publishes a saved comment only after loading its matching note revision', as
   } finally { read.mockRestore(); }
 });
 async function postComment(body: string) {
-  const field = screen.getByRole('textbox', { name: '댓글' });
+  const field = await waitFor(() => {
+    const textbox = screen.getByRole('textbox', { name: '댓글' });
+    expect(textbox.getAttribute('contenteditable')).toBe('true');
+    return textbox;
+  });
   field.querySelector('p')!.textContent = body; fireEvent.input(field);
   await waitFor(() => expect(screen.getByRole('button', { name: '댓글 남기기' }).getAttribute('disabled')).toBeNull());
   fireEvent.click(screen.getByRole('button', { name: '댓글 남기기' }));
