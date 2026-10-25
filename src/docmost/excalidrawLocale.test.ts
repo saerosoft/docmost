@@ -1,4 +1,7 @@
 // @vitest-environment jsdom
+// Collect the real pinned SDK as a suite fixture, before timed behavior checks.
+// The production loader still performs its setup inside the test below.
+import * as pinnedSdk from '@excalidraw/excalidraw';
 import { expect, it } from 'vitest';
 import { excalidrawLanguageCode, loadExcalidraw } from './excalidraw';
 import { docmostI18n } from './i18n';
@@ -7,6 +10,8 @@ it('makes the real configured GUI locale selectable by the pinned SDK before edi
   // No SDK or i18n mock: the installed SDK otherwise filters Korean out of its
   // public languages list and InitializeApp silently chooses English instead.
   const sdk = await loadExcalidraw();
+  expect(sdk.Excalidraw).toBe(pinnedSdk.Excalidraw);
+  expect(sdk.languages).toBe(pinnedSdk.languages);
   const language = excalidrawLanguageCode(docmostI18n.resolvedLanguage || docmostI18n.language);
   expect(language).toBe('ko-KR');
   const selected = sdk.languages.find(candidate => candidate.code === language) || sdk.defaultLang;
