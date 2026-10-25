@@ -67,6 +67,15 @@ through `http://localhost:9088`, then open `http://localhost:9090`. Use the
 same hostname for both applications so the product session cookie is shared.
 This repository does not start or provision those external services.
 
+Links back to the product preserve the note client's protocol and hostname. At
+dev-server startup and build time, `NOTE_GUI_WEB_PORT` selects the product web
+port, falling back to `FRONTEND_WEB_PORT` from the parent Make environment, then
+to the standalone default `9088`. The value must be an integer from 1 to 65535.
+The parent local stack therefore links to web port `18128` without changing
+`localhost` into `127.0.0.1` or losing the session cookie. Restart the dev server
+or rebuild the client after changing the port. Only the port is exposed to
+the browser as `VITE_WEB_PORT`.
+
 The connected API must expose `knowledgeCurrentItems`, `KnowledgeNote.authoredBody`
 and `bodyOrigin` on notes and revisions. The editor loads `richBody` first,
 then `authoredBody`, including an intentionally empty authored body. Current
@@ -91,7 +100,14 @@ with an embed, the XML view follows graphical edits and is read-only to avoid
 two editors overwriting each other's drafts. The
 API's read-only permission selects the graphical viewer instead of the editor.
 The Excalidraw editor and its pinned fonts run locally. Preserve the SDK patch
-that removes automatic font CDN fallback. Mermaid uses strict, sanitized SVG.
+that removes automatic font CDN fallback. Saved Excalidraw scenes render as
+sanitized SVG image previews with embedded local fonts and image data. Remote
+media and embeddables are not fetched for previews. Escape remains with the
+canvas and its text tools; explicit Close or Exit confirms any unsaved edits.
+The drawing controls follow the note GUI language. The loader explicitly enables
+its pinned SDK's bundled Korean locale, which the upstream completion filter
+otherwise hides; untranslated SDK strings retain the upstream English fallback.
+Mermaid uses strict, sanitized SVG.
 A diagram upload creates a file revision; save the note to commit its reference.
 The [self-hosted graphical acceptance record](docs/drawio-acceptance.md)
 describes the verified embed, message checks and live attachment revocation.
@@ -140,6 +156,11 @@ tab drafts. A pane ID is independent of the note ID. Saves use
 There is no Hocuspocus/Yjs provider or browser body database.
 
 The tree requests 50 siblings at a time and retains at most 24 pages.
+The attachment tab reads 50 authorized file records per page, including earlier
+file revisions and imported files that do not appear inside the document. It
+replaces each page, clears rows when access changes, and downloads the selected
+immutable file through the same-origin authenticated API. Large downloads use
+the browser download manager; the client does not buffer them as editor blobs.
 Comments, history and relationships use 20-row pages with at most 100 visible
 records. Current knowledge and accumulation history replace their 20-row pages;
 evidence and comparisons expand inside the selected item. Location restoration

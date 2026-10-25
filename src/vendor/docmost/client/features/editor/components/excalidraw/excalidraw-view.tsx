@@ -8,12 +8,14 @@ import { IconEdit } from "@tabler/icons-react";
 import { useTranslation } from "react-i18next";
 import { useDiagramSource } from "@knowledge/docmost/useDiagramSource";
 import { useDiagramUnload } from "@knowledge/docmost/useDiagramUnload";
-import { loadExcalidraw } from "@knowledge/docmost/excalidraw";
+import { excalidrawLanguageCode, loadExcalidraw } from "@knowledge/docmost/excalidraw";
+import { ExcalidrawPreview } from "@knowledge/docmost/ExcalidrawPreview";
+import { onAccessLost } from "@knowledge/transport";
 
 const ExcalidrawComponent = lazy(() => loadExcalidraw().then(module => ({ default: module.Excalidraw })));
 
 export default function ExcalidrawView(props: NodeViewProps) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const stored = useDiagramSource(props);
   const [excalidrawAPI, setExcalidrawAPI] = useState<ExcalidrawImperativeAPI | null>(null);
   const [excalidrawData, setExcalidrawData] = useState<ExcalidrawInitialDataState | null>(null);
@@ -23,21 +25,31 @@ export default function ExcalidrawView(props: NodeViewProps) {
   const [loadError, setLoadError] = useState("");
   const [opening, setOpening] = useState(false);
   const mounted = useRef(true);
+  const authorized = useRef(true);
+  const openSequence = useRef(0);
   const isInitialLoadRef = useRef(true);
   const lastFingerprintRef = useRef("");
   useDiagramUnload(opened && dirty);
-  useEffect(() => { mounted.current = true; return () => { mounted.current = false; }; }, []);
+  useEffect(() => {
+    mounted.current = true; authorized.current = true;
+    const stop = onAccessLost(() => {
+      authorized.current = false; openSequence.current++;
+      setDirty(false); close(); setExcalidrawAPI(null); setExcalidrawData(null); setLoadError(""); setOpening(false);
+    });
+    return () => { mounted.current = false; authorized.current = false; openSequence.current++; stop(); };
+  }, [close]);
 
   const handleOpen = async () => {
-    if (!stored.loaded || opening) return;
+    if (!stored.loaded || opening || !authorized.current) return;
+    const sequence = ++openSequence.current;
     setOpening(true); setLoadError("");
     try {
       const { loadFromBlob } = await loadExcalidraw();
       const scene = await loadFromBlob(new Blob([stored.source], { type: "application/json" }), null, null);
-      if (props.editor.isDestroyed || !mounted.current) return;
+      if (props.editor.isDestroyed || !mounted.current || !authorized.current || sequence !== openSequence.current) return;
       setExcalidrawData(scene); setDirty(false); isInitialLoadRef.current = true; open();
-    } catch { if (mounted.current) setLoadError("Excalidraw 원문을 열지 못했습니다. 원본 파일은 보존됩니다."); }
-    finally { if (mounted.current) setOpening(false); }
+    } catch { if (mounted.current && authorized.current && sequence === openSequence.current) setLoadError("Excalidraw 원문을 열지 못했습니다. 원본 파일은 보존됩니다."); }
+    finally { if (mounted.current && sequence === openSequence.current) setOpening(false); }
   };
   const saveData = useCallback(async () => {
     if (!excalidrawAPI || stored.busy) return;
@@ -50,11 +62,11 @@ export default function ExcalidrawView(props: NodeViewProps) {
   }, [excalidrawAPI, stored.busy, stored.saveData, close]);
   const handleClose = useCallback(() => {
     if (stored.busy) return;
-    if (!dirty || window.confirm(t("You have unsaved changes that will be lost."))) { setDirty(false); close(); setExcalidrawAPI(null); }
+    if (!dirty || window.confirm(t("You have unsaved changes. Do you want to discard them?"))) { setDirty(false); close(); setExcalidrawAPI(null); }
   }, [stored.busy, dirty, close, t]);
 
   return <NodeViewWrapper ref={stored.container} data-drag-handle contentEditable={false}>
-    <Modal.Root opened={opened} onClose={handleClose} fullScreen closeOnEscape={!stored.busy}>
+    <Modal.Root opened={opened} onClose={handleClose} fullScreen closeOnEscape={false}>
       <Modal.Overlay/><Modal.Content><Modal.Header><Modal.Title>Excalidraw</Modal.Title><Modal.CloseButton aria-label="Excalidraw 닫기" disabled={stored.busy}/></Modal.Header><Modal.Body pos="relative">
         <LoadingOverlay visible={stored.busy}/>
         <Group justify="flex-end" wrap="nowrap" bg="var(--mantine-color-body)" p="xs">
@@ -63,7 +75,7 @@ export default function ExcalidrawView(props: NodeViewProps) {
         </Group>
         {(stored.error || loadError) && <Text role="alert" c="red">{stored.error || loadError}</Text>}
         <div style={{ height: "80vh" }}><Suspense fallback={<Text role="status">편집기 읽는 중…</Text>}>
-          {excalidrawData && <ExcalidrawComponent excalidrawAPI={setExcalidrawAPI} onChange={(elements, _appState, files) => {
+          {excalidrawData && <ExcalidrawComponent langCode={excalidrawLanguageCode(i18n.resolvedLanguage || i18n.language)} excalidrawAPI={setExcalidrawAPI} onChange={(elements, _appState, files) => {
             const fingerprint = `${elements.length}:${elements.reduce((sum, element) => sum + (element.version || 0), 0)}:${Object.keys(files).length}`;
             if (isInitialLoadRef.current) { lastFingerprintRef.current = fingerprint; isInitialLoadRef.current = false; return; }
             if (fingerprint !== lastFingerprintRef.current) { lastFingerprintRef.current = fingerprint; setDirty(true); }
@@ -72,8 +84,9 @@ export default function ExcalidrawView(props: NodeViewProps) {
       </Modal.Body></Modal.Content>
     </Modal.Root>
     <Card radius="md" onClick={event => event.detail === 2 && void handleOpen()} p="xs" withBorder className={clsx(props.selected && "ProseMirror-selectednode")}>
-      <Group justify="center"><ActionIcon variant="transparent" color="gray" aria-label={t("Edit drawing")} onClick={() => void handleOpen()} disabled={!stored.loaded || opening}><IconEdit size={18}/></ActionIcon>
-        <Text component="span" size="lg" c="dimmed">{t("Double-click to edit Excalidraw diagram")}</Text>
+      <ExcalidrawPreview source={stored.loaded ? stored.source : undefined} theme={computedColorScheme}/>
+      <Group justify="center"><ActionIcon variant="transparent" color="gray" aria-label={t(stored.editable ? "Edit drawing" : "View drawing")} onClick={() => void handleOpen()} disabled={!stored.loaded || opening}><IconEdit size={18}/></ActionIcon>
+        <Text component="span" size="lg" c="dimmed">{t(stored.editable ? "Double-click to edit Excalidraw diagram" : "Double-click to view Excalidraw diagram")}</Text>
       </Group>
       {(stored.error || loadError) && <Text role="alert" c="red">{stored.error || loadError}</Text>}
     </Card>

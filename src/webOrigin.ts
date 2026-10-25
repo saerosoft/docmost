@@ -2,8 +2,6 @@
  * The product web application issues the session cookie for the host name it was opened on, and a browser sends that
  * cookie only to the same host name. Links back to it therefore keep this page's host name and change only the port.
  */
-const WEB_PORT = '9088';
-
 export function webUrl(path: string, location: Pick<Location, 'protocol' | 'hostname'> = window.location) {
-  return `${location.protocol}//${location.hostname}:${WEB_PORT}${path}`;
+  return `${location.protocol}//${location.hostname}:${import.meta.env.VITE_WEB_PORT}${path}`;
 }

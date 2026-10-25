@@ -5,6 +5,7 @@ import CommentListWithTabs from './vendor/docmost/client/features/comment/compon
 import { DocmostHistory } from './docmost/DocmostHistory';
 import { NoteProperties } from './NoteProperties';
 import { NoteRelations } from './NoteRelations';
+import { NoteAttachments } from './NoteAttachments';
 import type { AddComment, Comment, Note, NoteApi, Page, Revision } from './model';
 
 interface Props { api: NoteApi; note: Note; dirty: boolean; onRestore: (note: Note) => void; onOpen: (id: string) => void; onRevision: (note: Note) => void }
@@ -46,7 +47,7 @@ export function NotePanels({ api, note, dirty, onRestore, onOpen, onRevision }: 
   }
   return <aside className="note-panels" aria-label="노트 상세">
     <Tabs value={panel} onChange={setPanel}><Tabs.List>
-      <Tabs.Tab value="comments">댓글</Tabs.Tab><Tabs.Tab value="history">이력</Tabs.Tab><Tabs.Tab value="properties">속성</Tabs.Tab><Tabs.Tab value="relations">관계</Tabs.Tab>
+      <Tabs.Tab value="comments">댓글</Tabs.Tab><Tabs.Tab value="history">이력</Tabs.Tab><Tabs.Tab value="properties">속성</Tabs.Tab><Tabs.Tab value="relations">관계</Tabs.Tab><Tabs.Tab value="attachments">첨부</Tabs.Tab>
     </Tabs.List></Tabs>
     {error && <p role="alert">{error}</p>}{busy && <p role="status">처리 중…</p>}
     {panel === 'comments' && <CommentListWithTabs comments={comments} canComment={note.canEdit} isLoading={busy} onSave={comment}
@@ -58,6 +59,7 @@ export function NotePanels({ api, note, dirty, onRestore, onOpen, onRevision }: 
         onLoadMore={() => void perform(async () => { const page = await api.history(note.id, history.nextCursor); setHistory({ items: [...history.items, ...page.items].slice(-100), nextCursor: page.nextCursor }); })}/>
     </>}
     {panel === 'properties' && <NoteProperties api={api} note={note} dirty={dirty} onRevision={onRevision}/>}
+    {panel === 'attachments' && <NoteAttachments api={api} noteId={note.id} revision={note.revision}/>}
     {panel === 'relations' && <NoteRelations api={api} note={note} onOpen={onOpen} onRevision={onRevision}/>}
   </aside>;
 }

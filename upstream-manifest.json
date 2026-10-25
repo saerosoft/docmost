@@ -202,7 +202,9 @@
       "source": "apps/client/public/locales/ko-KR/translation.json",
       "destination": "src/vendor/docmost/client/locales/ko-KR.json",
       "upstreamSha256": "5f0326e190fd30aab6b6cb436d814fcae50e9ed45279d6ed3e00a36a7bb13a9f",
-      "changes": []
+      "changes": [
+        "Translate drawing preview and read-only viewing states"
+      ]
     },
     {
       "source": "apps/client/src/features/editor/components/slash-menu/menu-items.ts",
@@ -324,7 +326,8 @@
       "destination": "src/vendor/docmost/client/features/page-history/components/history-editor.tsx",
       "upstreamSha256": "6e309b2aa600250d0130ebd549e92fea780ffe0c202a576c4a45fc04045620dc",
       "changes": [
-        "Keeps read-only core Tiptap revision rendering and change decorations using canonical immutable revision bodies; removes upstream history queries and excludes silent unsupported-content conversion."
+        "Keeps read-only core Tiptap revision rendering and change decorations using canonical immutable revision bodies; removes upstream history queries and excludes silent unsupported-content conversion.",
+        "Schedule cancellable history content and decoration updates after the React commit to protect React node view rendering"
       ]
     },
     {
@@ -432,7 +435,9 @@
       "upstreamSha256": "7e4baab04ca1b5a979e8c448f39163e13acf7fed331dd9e8cb4cc1a370d43383",
       "changes": [
         "Keeps the core node card, local Excalidraw canvas and dirty modal flow. Reopens and serializes full scenes through immutable authorized attachments; removes upstream storage, library persistence and CDN path rewriting.",
-        "Portals the diagram dialog to the document body so its controls remain inside the viewport in either editing pane, and labels its close control."
+        "Portals the diagram dialog to the document body so its controls remain inside the viewport in either editing pane, and labels its close control.",
+        "Use the GUI locale and explicit guarded exit; render authorized stored scenes through sanitized local SVG previews",
+        "Normalize Korean GUI language codes before selecting the explicitly enabled bundled SDK locale"
       ]
     },
     {

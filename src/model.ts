@@ -33,6 +33,7 @@ export interface Provenance {
   reviews: { id: string; spaceId: string; title: string; kind: 'proposal' | 'changeSet'; status: 'PENDING' | 'ACCEPTED' | 'REJECTED' | null }[];
   actions: { id: string; spaceId: string; title: string }[];
 }
+export interface NoteFile { id: string; fileName: string; mediaType: string; byteSize: number; checksum: string; revision: number; previousId: string | null; createdAt: string }
 export interface AttachmentRevision { attachmentId: string; revision: number; name: string; mimeType: string }
 export interface NoteAccumulation {
   id: string; spaceId: string; changeSetId: string; kind: string; title: string; preview: string;
@@ -84,6 +85,7 @@ export interface NoteApi {
   relationEvidence(id: string, cursor: string | null): Promise<Page<RelationEvidence>>;
   relate(id: string, targetNoteId: string, predicate: RelationPredicate, validity: RelationValidity): Promise<void>;
   decideRelation(id: string, expectedRevision: number, decision: Exclude<RelationReviewState, 'PROPOSED'>, reason: string): Promise<void>;
+  files(id: string, cursor: string | null): Promise<Page<NoteFile>>;
   upload(id: string, file: File, previous?: AttachmentRevision): Promise<AttachmentRevision>;
   attachment(id: string, revision: number): Promise<Blob>;
 }

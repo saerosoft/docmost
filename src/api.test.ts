@@ -80,3 +80,19 @@ it('collects the sources, rules, reviews and actions of a note without duplicate
     actions: [{ id: 'action', spaceId: 'space', title: 'Follow up' }],
   });
 });
+
+it('pages all authorized immutable file revisions using the last file ID as the cursor', async () => {
+  const items = Array.from({ length: 50 }, (_, index) => ({
+    id: `file-${index}`, fileName: 'Imported drawing.pdf', mediaType: 'application/pdf',
+    byteSize: 248710446, checksum: 'a'.repeat(64), revision: index + 1,
+    previousId: index ? `file-${index - 1}` : null, createdAt: '2026-10-25T04:00:00Z',
+  }));
+  vi.mocked(graphql).mockResolvedValueOnce({ noteFiles: items });
+  expect(await api.files('note', 'previous-page')).toEqual({ items, nextCursor: 'file-49' });
+  expect(graphql).toHaveBeenLastCalledWith(
+    expect.stringContaining('noteFiles(noteId:$noteId,after:$after,limit:50){id fileName mediaType byteSize checksum revision previousId createdAt}'),
+    { noteId: 'note', after: 'previous-page' },
+  );
+  vi.mocked(graphql).mockResolvedValueOnce({ noteFiles: [items[0]] });
+  expect(await api.files('note', 'file-49')).toEqual({ items: [items[0]], nextCursor: null });
+});

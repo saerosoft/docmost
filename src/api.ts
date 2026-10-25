@@ -1,6 +1,6 @@
 import { graphql, request, ApiError } from './transport';
 import type { JSONContent } from '@tiptap/core';
-import type { AttachmentRevision, Comment, CurrentKnowledgePage, KnowledgeBodyOrigin, Note, NoteAccumulation, NoteAccumulationChange, NoteApi, Page, PropertyValue, Provenance, Relation, RelationEvidence, RelationKind, RelationPredicate, RelationReviewState, Revision, Space, TreeNote, Visibility } from './model';
+import type { AttachmentRevision, Comment, CurrentKnowledgePage, KnowledgeBodyOrigin, Note, NoteAccumulation, NoteAccumulationChange, NoteApi, NoteFile, Page, PropertyValue, Provenance, Relation, RelationEvidence, RelationKind, RelationPredicate, RelationReviewState, Revision, Space, TreeNote, Visibility } from './model';
 
 interface WireRelation {
   id: string; fromNoteId: string; toNoteId: string; predicate: RelationPredicate; legacyPredicate: string | null; kind: RelationKind;
@@ -145,6 +145,13 @@ export const api: NoteApi = {
   },
   async decideRelation(id, expectedRevision, decision, reason) {
     await graphql('mutation($id:UUID!,$input:DecideNoteRelationInput!){decideNoteRelation(id:$id,input:$input){id}}', { id, input: { expectedRevision, decision, reason } });
+  },
+  async files(noteId, cursor) {
+    const items = (await graphql<{ noteFiles: NoteFile[] }>(
+      'query($noteId:UUID!,$after:UUID){noteFiles(noteId:$noteId,after:$after,limit:50){id fileName mediaType byteSize checksum revision previousId createdAt}}',
+      { noteId, after: cursor },
+    )).noteFiles;
+    return page(items, file => file.id, 50);
   },
   async upload(noteId, file, previous) {
     const note = await api.note(noteId);

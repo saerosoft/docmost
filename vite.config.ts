@@ -9,6 +9,9 @@ const apiOrigin = process.env.NOTE_GUI_API_ORIGIN || 'http://127.0.0.1:9086';
 const apiUrl = new URL(apiOrigin);
 if (!['http:', 'https:'].includes(apiUrl.protocol) || apiUrl.origin !== apiOrigin) throw new Error('NOTE_GUI_API_ORIGIN must be an HTTP(S) origin without credentials, a path or query.');
 
+const webPort = process.env.NOTE_GUI_WEB_PORT ?? process.env.FRONTEND_WEB_PORT ?? '9088';
+if (!/^[1-9]\d{0,4}$/.test(webPort) || Number(webPort) > 65535) throw new Error('NOTE_GUI_WEB_PORT or FRONTEND_WEB_PORT must be a port from 1 to 65535.');
+
 function excalidrawFonts(): Plugin {
   const fonts = fileURLToPath(new URL('./node_modules/@excalidraw/excalidraw/dist/prod/fonts', import.meta.url));
   return { name: 'pinned-excalidraw-fonts', apply: 'build', async generateBundle() {
@@ -25,6 +28,7 @@ function excalidrawFonts(): Plugin {
 
 export default defineConfig({
   plugins: [react(), excalidrawFonts()],
+  define: { 'import.meta.env.VITE_WEB_PORT': JSON.stringify(webPort) },
   resolve: { alias: { '@': fileURLToPath(new URL('./src/vendor/docmost/client', import.meta.url)), '@knowledge': fileURLToPath(new URL('./src', import.meta.url)) } },
   server: {
     host: '127.0.0.1', port: 9090, strictPort: true,

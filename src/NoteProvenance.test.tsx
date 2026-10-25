@@ -8,9 +8,10 @@ import { NoteProvenance } from './NoteProvenance';
 beforeEach(() => {
   Object.defineProperty(window, 'matchMedia', { configurable: true, value: vi.fn(() => ({ matches: false, addEventListener: vi.fn(), removeEventListener: vi.fn() })) });
 });
-afterEach(() => { cleanup(); });
+afterEach(() => { cleanup(); vi.unstubAllEnvs(); });
 
-it('links each provenance record to the web application on the same host name', async () => {
+it.each(['9088', '18128'])('links each provenance record to the web application on the same host name and port %s', async port => {
+  vi.stubEnv('VITE_WEB_PORT', port);
   const note: Note = { id: 'note', spaceId: 'space', title: 'Title', revision: 1, bodyOrigin: 'HUMAN', bodyJson: { type: 'doc' }, visibility: 'SPACE', parentId: null, canEdit: true };
   const api = {
     provenance: vi.fn().mockResolvedValue({
@@ -21,7 +22,7 @@ it('links each provenance record to the web application on the same host name', 
     }),
   } as unknown as NoteApi;
   render(<MantineProvider><NoteProvenance api={api} note={note}/></MantineProvider>);
-  const origin = `${window.location.protocol}//${window.location.hostname}:9088`;
+  const origin = `${window.location.protocol}//${window.location.hostname}:${port}`;
   expect((await screen.findByRole('link', { name: 'Chat' })).getAttribute('href')).toBe(`${origin}/spaces/space/source-revisions/rev`);
   expect(screen.getByRole('link', { name: 'R-OPS v2' }).getAttribute('href')).toBe(`${origin}/spaces/space/rules?stage=history&ruleset=rules&version=v1`);
   expect(screen.getByRole('link', { name: 'Edit' }).getAttribute('href')).toBe(`${origin}/spaces/space/reviews?proposal=proposal`);

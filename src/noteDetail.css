@@ -253,3 +253,15 @@
     min-height: 44px;
   }
 }
+
+.note-attachments {
+  overflow-wrap: anywhere;
+}
+
+.excalidraw-preview img {
+  display: block;
+  max-width: 100%;
+  height: auto;
+  max-height: 480px;
+  margin: 0 auto 12px;
+}

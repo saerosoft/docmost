@@ -334,7 +334,7 @@
   "Double-click to edit Draw.io diagram": "Draw.io diagram을 편집하려면 더블 클릭하세요",
   "Exit": "나가기",
   "Save & Exit": "저장 후 나가기",
-  "Double-click to edit Excalidraw diagram": "Excalidraw diagram을 편집하려면 더블 클릭하세요",
+  "Double-click to edit Excalidraw diagram": "Excalidraw 다이어그램을 편집하려면 더블 클릭하세요",
   "Paste link": "링크 붙여넣기",
   "Paste link or search pages": "링크를 붙여넣거나 페이지를 검색",
   "Link to web page": "웹페이지에 링크하기",
@@ -1476,5 +1476,13 @@
   "Test event delivered to {{name}}": "테스트 이벤트가 {{name}}에 전송되었습니다",
   "Updated SIEM destination": "SIEM 대상 업데이트됨",
   "Verify TLS certificate": "TLS 인증서 검증",
-  "e.g. Splunk prod": "예: Splunk 운영"
+  "e.g. Splunk prod": "예: Splunk 운영",
+  "Double-click to view Excalidraw diagram": "Excalidraw 다이어그램을 보려면 더블 클릭하세요",
+  "View drawing": "드로잉 보기",
+  "Drawing preview unavailable. The original file is preserved.": "다이어그램 미리보기를 불러오지 못했습니다. 원본 파일은 보존됩니다.",
+  "Retry drawing preview": "미리보기 다시 읽기",
+  "Loading drawing preview…": "다이어그램 미리보기를 불러오는 중…",
+  "Empty drawing.": "빈 다이어그램입니다.",
+  "Excalidraw drawing preview": "Excalidraw 다이어그램 미리보기",
+  "External media is not loaded in drawing previews.": "외부 주소의 미디어는 다이어그램 미리보기에서 불러오지 않습니다."
 }

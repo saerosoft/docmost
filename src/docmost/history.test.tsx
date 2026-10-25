@@ -1,10 +1,12 @@
 // @vitest-environment jsdom
-import { cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
+import { act, cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { afterEach, beforeEach, expect, it, vi } from 'vitest';
 import { api } from '../api';
 import type { Note, Revision } from '../model';
 import { NotePanels } from '../NotePanels';
 import { DocmostPaneProvider } from './DocmostPaneProvider';
+import { AttachmentContext } from '../editor/attachmentContext';
+import { HistoryEditor } from '../vendor/docmost/client/features/page-history/components/history-editor';
 
 const body = (text: string) => ({ type: 'doc', content: [{ type: 'paragraph', content: [{ type: 'text', text }] }] });
 const note: Note = { id: 'note', spaceId: 'space', title: 'Current', revision: 7, bodyOrigin: 'HUMAN', bodyJson: body('Current'), canEdit: true, visibility: 'PRIVATE', parentId: null };
@@ -58,4 +60,57 @@ it('keeps history selection and comment drafts independent for the same note in 
   fireEvent.click(left.getByRole('button', { name: /개정 1 · Title 1/ }));
   await waitFor(() => expect(left.getByRole('textbox', { name: '개정 원문' }).textContent).toContain('Old body'));
   expect(right.getByRole('textbox', { name: '개정 원문' }).textContent).toContain('New body');
+});
+
+const codeBody = (text: string) => ({ type: 'doc', content: [{ type: 'codeBlock', attrs: { language: 'typescript' }, content: [{ type: 'text', text }] }] });
+function historyView(text: string, previous = 'const previous = 1;') {
+  return <DocmostPaneProvider><AttachmentContext.Provider value={{ api, noteId: 'history-note', editable: false }}>
+    <HistoryEditor title="Rich revision" content={codeBody(text)} previousContent={codeBody(previous)}/>
+  </AttachmentContext.Provider></DocmostPaneProvider>;
+}
+
+function historyCodeText(document: HTMLElement, side: 'current' | 'previous') {
+  const code = document.querySelector<HTMLElement>('pre code[data-node-view-content]');
+  expect(code).not.toBeNull();
+  const copy = code!.cloneNode(true) as HTMLElement;
+  // Deleted widgets are comparison overlays, while added spans contain the current authored code.
+  const excluded = side === 'current' ? '.history-diff-deleted, .history-diff-node-deleted' : '.history-diff-added, .history-diff-node-added';
+  copy.querySelectorAll(excluded).forEach(node => node.remove());
+  return copy.textContent;
+}
+
+it('renders and compares real React node views without flushing during a React lifecycle', async () => {
+  const errors = vi.spyOn(console, 'error');
+  try {
+    const current = render(historyView('const current = 2;'));
+    const document = await screen.findByRole('textbox', { name: '개정 원문' });
+    await waitFor(() => expect(historyCodeText(document, 'current')).toBe('const current = 2;'));
+    expect(historyCodeText(document, 'previous')).toBe('const previous = 1;');
+    expect([...document.querySelectorAll('.history-diff-deleted')].map(node => node.textContent).join('')).toBe('previous1');
+    expect(document.getAttribute('contenteditable')).toBe('false');
+    current.rerender(historyView('const selected = 3;', 'const current = 2;'));
+    await waitFor(() => expect(historyCodeText(document, 'current')).toBe('const selected = 3;'));
+    expect(historyCodeText(document, 'previous')).toBe('const current = 2;');
+    expect([...document.querySelectorAll('.history-diff-deleted')].map(node => node.textContent).join('')).toBe('current2');
+    expect(errors.mock.calls.flat().map(String).join('\n')).not.toContain('flushSync was called from inside a lifecycle method');
+  } finally { errors.mockRestore(); }
+});
+
+it('keeps the latest rapid history selection and cancels pending work on unmount', async () => {
+  const errors = vi.spyOn(console, 'error');
+  try {
+    const current = render(historyView('const first = 1;'));
+    current.rerender(historyView('const intermediate = 2;'));
+    current.rerender(historyView('const last = 3;'));
+    const document = await screen.findByRole('textbox', { name: '개정 원문' });
+    await waitFor(() => expect(historyCodeText(document, 'current')).toBe('const last = 3;'));
+    expect(historyCodeText(document, 'previous')).toBe('const previous = 1;');
+    expect([...document.querySelectorAll('.history-diff-deleted')].map(node => node.textContent).join('')).toBe('previous1');
+    expect(historyCodeText(document, 'current')).not.toContain('const intermediate = 2;');
+    current.rerender(historyView('const cancelled = 4;'));
+    current.unmount();
+    await act(async () => { await Promise.resolve(); });
+    expect(screen.queryByRole('textbox', { name: '개정 원문' })).toBeNull();
+    expect(errors.mock.calls.flat().map(String).join('\n')).not.toContain('flushSync was called from inside a lifecycle method');
+  } finally { errors.mockRestore(); }
 });
