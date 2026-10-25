@@ -1,6 +1,6 @@
 import { graphql, request, ApiError } from './transport';
 import type { JSONContent } from '@tiptap/core';
-import type { AttachmentRevision, Comment, CurrentKnowledgePage, KnowledgeBodyOrigin, Note, NoteAccumulation, NoteAccumulationChange, NoteApi, NoteFile, Page, PropertyValue, Provenance, Relation, RelationEvidence, RelationKind, RelationPredicate, RelationReviewState, Revision, Space, TreeNote, Visibility } from './model';
+import type { AttachmentRevision, Comment, CurrentKnowledgePage, KnowledgeBodyOrigin, Note, NoteAccumulation, NoteAccumulationChange, NoteApi, NoteFile, Page, PropertyValue, Provenance, Relation, RelationEvidence, RelationKind, RelationPredicate, RelationReviewState, RelationTargetPage, Revision, Space, TreeNote, Visibility } from './model';
 
 interface WireRelation {
   id: string; fromNoteId: string; toNoteId: string; predicate: RelationPredicate; legacyPredicate: string | null; kind: RelationKind;
@@ -41,6 +41,19 @@ export const api: NoteApi = {
   },
   async findNotes(spaceId, query) {
     return (await graphql<{ knowledgeNotes: { id: string; title: string }[] }>('query($spaceId:UUID!,$query:String){knowledgeNotes(spaceId:$spaceId,query:$query,offset:0,limit:20){id title}}', { spaceId, query })).knowledgeNotes;
+  },
+  async findRelationNotes(noteId, query, cursor) {
+    const offset = Number(cursor ?? 0);
+    const text = query.trim();
+    if (!Number.isInteger(offset) || offset < 0 || offset > 100000 || text.length > 200) {
+      throw new ApiError('검색어와 대상 페이지를 확인해 주세요.', 'INVALID_INPUT');
+    }
+    const value = (await graphql<{ knowledgeRelationTargets: Omit<RelationTargetPage, 'nextCursor'> & { hasNext: boolean } }>(
+      'query($noteId:UUID!,$query:String,$offset:Int!){knowledgeRelationTargets(noteId:$noteId,query:$query,offset:$offset,limit:20){noteId total hasNext items{id title}}}',
+      { noteId, query: text || null, offset },
+    )).knowledgeRelationTargets;
+    if (value.noteId !== noteId) throw new ApiError('연결할 노트 목록을 확인하지 못했습니다. 다시 검색해 주세요.', 'RESPONSE_MISMATCH');
+    return { noteId: value.noteId, total: value.total, items: value.items, nextCursor: value.hasNext ? String(offset + 20) : null };
   },
   async provenance(note) {
     const value = await graphql<WireProvenance>(

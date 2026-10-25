@@ -10,6 +10,7 @@ export interface TreeNote { id: string; title: string; parentId: string | null; 
 export interface Page<T> { items: T[]; nextCursor: string | null }
 export interface Space { id: string; name: string; accessEpoch: number; myRole: 'OWNER' | 'EDITOR' | 'VIEWER' }
 export interface NoteSummary { id: string; title: string }
+export interface RelationTargetPage extends Page<NoteSummary> { noteId: string; total: number }
 export interface Revision { id: string; revision: number; title: string; createdAt: string; bodyJson: JSONContent; bodyOrigin: KnowledgeBodyOrigin }
 export interface Comment { id: string; body: string; createdAt: string; authorName: string }
 export type PropertyValue = { id?: string; key: string; valueType: 'TEXT' | 'NUMBER' | 'BOOLEAN' | 'DATE'; value: string };
@@ -67,6 +68,7 @@ export interface NoteApi {
   ancestors(id: string): Promise<NoteSummary[]>;
   note(id: string): Promise<Note>;
   findNotes(spaceId: string, query: string): Promise<NoteSummary[]>;
+  findRelationNotes(noteId: string, query: string, cursor: string | null): Promise<RelationTargetPage>;
   provenance(note: Note): Promise<Provenance>;
   accumulations(id: string, cursor: string | null): Promise<Page<NoteAccumulation>>;
   currentKnowledge(id: string, cursor: string | null): Promise<CurrentKnowledgePage>;

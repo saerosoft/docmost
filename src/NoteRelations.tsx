@@ -1,8 +1,8 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Button, Group, Select, TextInput } from '@mantine/core';
 import type { Note, NoteApi, NoteSummary, Page, Relation, RelationEvidence, RelationKind, RelationPredicate, RelationReviewState } from './model';
 import { NotePicker } from './NotePicker';
-import { onAccessLost } from './transport';
+import { ApiError, onAccessLost } from './transport';
 import { webUrl } from './webOrigin';
 
 const PREDICATES: { value: RelationPredicate; label: string }[] = [
@@ -17,33 +17,77 @@ const STATES: Record<RelationReviewState, string> = { PROPOSED: '검토 대기',
 interface Props { api: NoteApi; note: Note; onOpen: (id: string) => void; onRevision: (note: Note) => void }
 
 /** Typed relation assertions of a note: a person records accepted relations here and decides relations extracted from evidence. */
-export function NoteRelations({ api, note, onOpen, onRevision }: Props) {
+export function NoteRelations(props: Props) {
+  return <NoteRelationsPanel key={props.note.id + ':' + props.note.spaceId + ':' + props.note.visibility} {...props}/>;
+}
+
+function NoteRelationsPanel({ api, note, onOpen, onRevision }: Props) {
   const [relations, setRelations] = useState<Page<Relation>>({ items: [], nextCursor: null });
   const [target, setTarget] = useState<NoteSummary | null>(null);
+  const [targetError, setTargetError] = useState('');
   const [predicate, setPredicate] = useState<RelationPredicate>('RELATED_TO');
   const [validFrom, setValidFrom] = useState('');
   const [validTo, setValidTo] = useState('');
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
+  const [accessLost, setAccessLost] = useState(false);
+  const mounted = useRef(false);
+  const revoked = useRef(false);
+  const generation = useRef(0);
+  const inFlight = useRef(false);
+  function current(epoch = generation.current) {
+    return mounted.current && !revoked.current && generation.current === epoch;
+  }
   useEffect(() => {
-    let alive = true; setError(''); setBusy(true); setRelations({ items: [], nextCursor: null });
-    api.relations(note.id, null).then(value => { if (alive) setRelations(value); })
-      .catch(e => { if (alive) setError(e.message); }).finally(() => { if (alive) setBusy(false); });
+    mounted.current = true;
+    const off = onAccessLost(() => {
+      revoked.current = true; generation.current++;
+      setAccessLost(true); setRelations({ items: [], nextCursor: null }); setTarget(null);
+      setTargetError(''); setPredicate('RELATED_TO'); setValidFrom(''); setValidTo(''); setError(''); setBusy(false);
+    });
+    return () => { mounted.current = false; generation.current++; off(); };
+  }, []);
+  useEffect(() => {
+    if (revoked.current) return;
+    let alive = true;
+    const epoch = generation.current;
+    setError(''); setBusy(true); setRelations({ items: [], nextCursor: null });
+    api.relations(note.id, null).then(value => { if (alive && current(epoch)) setRelations(value); })
+      .catch(e => { if (alive && current(epoch)) setError(e.message); }).finally(() => { if (alive && current(epoch)) setBusy(false); });
     return () => { alive = false; };
   }, [api, note.id, note.revision]);
-  async function perform(action: () => Promise<void>) {
-    setBusy(true); setError('');
-    try { await action(); } catch (e) { setError((e as Error).message); } finally { setBusy(false); }
+  async function perform(action: (isCurrent: () => boolean) => Promise<void>) {
+    if (!current() || inFlight.current) return;
+    const epoch = generation.current;
+    const isCurrent = () => current(epoch);
+    inFlight.current = true;
+    setBusy(true); setError(''); setTargetError('');
+    try { await action(isCurrent); } catch (e) {
+      if (!isCurrent()) return;
+      if (e instanceof ApiError && e.code === 'INVALID_INPUT' && e.field === 'toNoteId') {
+        setTargetError('연결할 노트를 다시 선택해 주세요. ' + e.message);
+      } else setError((e as Error).message);
+    } finally {
+      inFlight.current = false;
+      if (isCurrent()) setBusy(false);
+    }
   }
   function decide(relation: Relation, decision: 'ACCEPTED' | 'REJECTED') {
+    if (!current() || !note.canEdit || inFlight.current) return;
     const reason = window.prompt(decision === 'ACCEPTED' ? '확정 이유를 입력해 주세요.' : '거절 이유를 입력해 주세요.')?.trim();
     if (!reason) return;
-    void perform(async () => { await api.decideRelation(relation.id, relation.revision, decision, reason); setRelations(await api.relations(note.id, null)); });
+    void perform(async isCurrent => {
+      await api.decideRelation(relation.id, relation.revision, decision, reason);
+      if (!isCurrent()) return;
+      const page = await api.relations(note.id, null);
+      if (isCurrent()) setRelations(page);
+    });
   }
+  if (accessLost) return <p role="alert">접근 권한이 변경되었습니다. 노트를 다시 열어 주세요.</p>;
   return <>
     {error && <p role="alert">{error}</p>}{busy && <p role="status">처리 중…</p>}
     {relations.items.map(value => <article key={`${note.id}:${note.revision}:${value.id}`}>
-      <Button variant="subtle" onClick={() => onOpen(value.targetNoteId)}>{value.title}</Button>
+      <Button variant="subtle" onClick={() => { if (current()) onOpen(value.targetNoteId); }}>{value.title}</Button>
       <p>
         {PREDICATES.find(item => item.value === value.predicate)?.label} · {KINDS[value.kind]} · {STATES[value.reviewState]}
         {value.legacyPredicate && ` · 이전 표기 ${value.legacyPredicate}`}
@@ -61,20 +105,28 @@ export function NoteRelations({ api, note, onOpen, onRevision }: Props) {
       </Group>}
     </article>)}
     {!relations.items.length && !busy && <p>아직 관계가 없습니다.</p>}
-    {relations.nextCursor && <Button disabled={busy} onClick={() => void perform(async () => { const page = await api.relations(note.id, relations.nextCursor); setRelations({ items: [...relations.items, ...page.items].slice(-100), nextCursor: page.nextCursor }); })}>관계 더 보기</Button>}
+    {relations.nextCursor && <Button disabled={busy} onClick={() => void perform(async isCurrent => {
+      const page = await api.relations(note.id, relations.nextCursor);
+      if (isCurrent()) setRelations({ items: [...relations.items, ...page.items].slice(-100), nextCursor: page.nextCursor });
+    })}>관계 더 보기</Button>}
     {note.canEdit && <form onSubmit={event => {
       event.preventDefault();
-      if (!target) return;
-      void perform(async () => {
+      if (!current() || !note.canEdit || !target) return;
+      void perform(async isCurrent => {
         await api.relate(note.id, target.id, predicate, { validFrom: validFrom ? new Date(validFrom).toISOString() : null, validTo: validTo ? new Date(validTo).toISOString() : null });
+        if (!isCurrent()) return;
         setTarget(null); setValidFrom(''); setValidTo('');
-        setRelations(await api.relations(note.id, null)); onRevision(await api.note(note.id));
+        const page = await api.relations(note.id, null);
+        if (!isCurrent()) return;
+        setRelations(page);
+        const updated = await api.note(note.id);
+        if (isCurrent()) onRevision(updated);
       });
     }}>
-      <NotePicker api={api} spaceId={note.spaceId} label="연결할 노트" selected={target} onSelect={setTarget} exclude={[note.id]} disabled={busy}/>
-      <Select label="관계" data={PREDICATES} value={predicate} onChange={value => value && setPredicate(value as RelationPredicate)} allowDeselect={false}/>
-      <TextInput type="date" label="효력 시작" value={validFrom} onChange={event => setValidFrom(event.currentTarget.value)}/>
-      <TextInput type="date" label="효력 종료" value={validTo} min={validFrom || undefined} onChange={event => setValidTo(event.currentTarget.value)}/>
+      <NotePicker api={api} spaceId={note.spaceId} relationNoteId={note.id} label="연결할 노트" selected={target} onSelect={value => { if (current()) { setTarget(value); setTargetError(''); } }} disabled={busy} error={targetError}/>
+      <Select label="관계" data={PREDICATES} value={predicate} onChange={value => { if (value && current()) setPredicate(value as RelationPredicate); }} allowDeselect={false}/>
+      <TextInput type="date" label="효력 시작" value={validFrom} onChange={event => { if (current()) setValidFrom(event.currentTarget.value); }}/>
+      <TextInput type="date" label="효력 종료" value={validTo} min={validFrom || undefined} onChange={event => { if (current()) setValidTo(event.currentTarget.value); }}/>
       <Button type="submit" disabled={busy || !target}>관계 추가</Button>
     </form>}
   </>;

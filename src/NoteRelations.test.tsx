@@ -4,7 +4,7 @@ import { act, cleanup, fireEvent, render, screen, waitFor } from '@testing-libra
 import { afterEach, beforeEach, expect, it, vi } from 'vitest';
 import type { Note, NoteApi, Page, Relation, RelationEvidence } from './model';
 import { NoteRelations } from './NoteRelations';
-import { clearAccess } from './transport';
+import { ApiError, clearAccess } from './transport';
 
 beforeEach(() => {
   Object.defineProperty(window, 'matchMedia', { configurable: true, value: vi.fn(() => ({ matches: false, addEventListener: vi.fn(), removeEventListener: vi.fn() })) });
@@ -22,9 +22,10 @@ function fixture(canEdit = true) {
   const decideRelation = vi.fn().mockResolvedValue(undefined);
   const relate = vi.fn().mockResolvedValue(undefined);
   const findNotes = vi.fn().mockResolvedValue([{ id: 'note', title: 'Title' }, { id: 'target', title: 'Target note' }]);
-  const api = { relations, decideRelation, relate, findNotes, note: vi.fn().mockResolvedValue({ ...note, revision: 5 }) } as unknown as NoteApi;
+  const findRelationNotes = vi.fn().mockResolvedValue({ noteId: 'note', total: 1, items: [{ id: 'target', title: 'Target note' }], nextCursor: null });
+  const api = { relations, decideRelation, relate, findNotes, findRelationNotes, note: vi.fn().mockResolvedValue({ ...note, revision: 5 }) } as unknown as NoteApi;
   const onRevision = vi.fn();
-  return { note, api, relations, decideRelation, relate, findNotes, onRevision };
+  return { note, api, relations, decideRelation, relate, findNotes, findRelationNotes, onRevision };
 }
 function show(value: ReturnType<typeof fixture>) {
   return render(<MantineProvider><NoteRelations api={value.api} note={value.note} onOpen={vi.fn()} onRevision={value.onRevision}/></MantineProvider>);
@@ -94,7 +95,8 @@ it('records a typed relation to a note picked by title with its validity and ref
   expect(screen.getByRole('button', { name: '관계 추가' })).toHaveProperty('disabled', true);
   fireEvent.change(await screen.findByRole('textbox', { name: '연결할 노트' }), { target: { value: 'Tar' } });
   fireEvent.click(await screen.findByRole('button', { name: 'Target note' }));
-  expect(value.findNotes).toHaveBeenLastCalledWith('space', 'Tar');
+  expect(value.findRelationNotes).toHaveBeenLastCalledWith('note', 'Tar', null);
+  expect(value.findNotes).not.toHaveBeenCalled();
   expect(screen.queryByRole('button', { name: 'Title' })).toBeNull();
   fireEvent.change(screen.getByLabelText('효력 시작'), { target: { value: '2026-03-01' } });
   fireEvent.click(screen.getByRole('button', { name: '관계 추가' }));
@@ -106,4 +108,117 @@ it('offers no decisions to a reader', async () => {
   await screen.findByText(/대체 · 추론 · 검토 대기/);
   expect(screen.queryByRole('button', { name: '관계 확정' })).toBeNull();
   expect(screen.queryByRole('button', { name: '관계 추가' })).toBeNull();
+});
+
+it('binds a stale target rejection to the selected note and preserves the other relationship inputs', async () => {
+  const value = fixture();
+  value.relate.mockRejectedValueOnce(new ApiError('입력한 값을 확인해 주세요.', 'INVALID_INPUT', 'toNoteId'));
+  show(value);
+  fireEvent.change(await screen.findByRole('textbox', { name: '연결할 노트' }), { target: { value: 'Tar' } });
+  fireEvent.click(await screen.findByRole('button', { name: 'Target note' }));
+  fireEvent.change(screen.getByLabelText('효력 시작'), { target: { value: '2026-03-01' } });
+  fireEvent.click(screen.getByRole('button', { name: '관계 추가' }));
+  expect(await screen.findByText('연결할 노트를 다시 선택해 주세요. 입력한 값을 확인해 주세요.')).toBeTruthy();
+  expect(screen.getByLabelText('효력 시작')).toHaveProperty('value', '2026-03-01');
+  expect(value.onRevision).not.toHaveBeenCalled();
+  fireEvent.click(screen.getByRole('button', { name: '다시 선택' }));
+  expect(screen.getByRole('textbox', { name: '연결할 노트' })).toBeTruthy();
+  expect(screen.queryByText('연결할 노트를 다시 선택해 주세요. 입력한 값을 확인해 주세요.')).toBeNull();
+});
+it('addresses a private anchor through the same server selector without supplying a client-chosen owner or visibility', async () => {
+  const value = fixture();
+  value.note = { ...value.note, visibility: 'PRIVATE' };
+  show(value);
+  fireEvent.change(await screen.findByRole('textbox', { name: '연결할 노트' }), { target: { value: 'Tar' } });
+  fireEvent.click(await screen.findByRole('button', { name: 'Target note' }));
+  expect(value.findRelationNotes).toHaveBeenLastCalledWith('note', 'Tar', null);
+  expect(value.findNotes).not.toHaveBeenCalled();
+});
+
+function expectRevokedRelationPanel() {
+  expect(screen.getByRole('alert').textContent).toBe('접근 권한이 변경되었습니다. 노트를 다시 열어 주세요.');
+  expect(screen.queryByRole('button', { name: 'Contract' })).toBeNull();
+  expect(screen.queryByText('source-revision:raw')).toBeNull();
+  expect(screen.queryByText('Target note')).toBeNull();
+  expect(screen.queryByRole('textbox', { name: '연결할 노트' })).toBeNull();
+  expect(screen.queryByLabelText('효력 시작')).toBeNull();
+  expect(screen.queryByLabelText('효력 종료')).toBeNull();
+  expect(screen.queryByRole('button', { name: '관계 추가' })).toBeNull();
+  expect(screen.queryByRole('button', { name: '관계 확정' })).toBeNull();
+}
+it('latches access loss for the entire relation panel and blocks stale form and decision handlers', async () => {
+  const value = fixture();
+  const prompt = vi.spyOn(window, 'prompt').mockReturnValue('Previously prepared reason');
+  const view = show(value);
+  fireEvent.change(await screen.findByRole('textbox', { name: '연결할 노트' }), { target: { value: 'Tar' } });
+  fireEvent.click(await screen.findByRole('button', { name: 'Target note' }));
+  fireEvent.change(screen.getByLabelText('효력 시작'), { target: { value: '2026-03-01' } });
+  fireEvent.change(screen.getByLabelText('효력 종료'), { target: { value: '2026-04-01' } });
+  const form = screen.getByRole('button', { name: '관계 추가' }).closest('form')!;
+  const decide = screen.getByRole('button', { name: '관계 확정' });
+  const reads = value.relations.mock.calls.length;
+  act(() => { clearAccess(); fireEvent.submit(form); fireEvent.click(decide); });
+  expectRevokedRelationPanel();
+  expect(value.relate).not.toHaveBeenCalled();
+  expect(value.decideRelation).not.toHaveBeenCalled();
+  expect(prompt).not.toHaveBeenCalled();
+  view.rerender(<MantineProvider><NoteRelations api={value.api} note={{ ...value.note, revision: 5 }} onOpen={vi.fn()} onRevision={value.onRevision}/></MantineProvider>);
+  expectRevokedRelationPanel();
+  expect(value.relations).toHaveBeenCalledTimes(reads);
+});
+it('does not render a relation list that arrives after access loss', async () => {
+  const value = fixture();
+  const retained: Page<Relation> = await value.relations();
+  let finish!: (page: Page<Relation>) => void;
+  value.relations.mockReset().mockImplementation(() => new Promise<Page<Relation>>(resolve => { finish = resolve; }));
+  show(value);
+  await waitFor(() => expect(value.relations).toHaveBeenCalledOnce());
+  act(() => clearAccess());
+  await act(async () => { finish(retained); });
+  expectRevokedRelationPanel();
+  expect(screen.queryByRole('status')).toBeNull();
+});
+it('stops relation-creation follow-up reads when access is lost before the write acknowledgement', async () => {
+  const value = fixture();
+  let finish!: () => void;
+  value.relate.mockImplementation(() => new Promise<void>(resolve => { finish = resolve; }));
+  show(value);
+  fireEvent.change(await screen.findByRole('textbox', { name: '연결할 노트' }), { target: { value: 'Tar' } });
+  fireEvent.click(await screen.findByRole('button', { name: 'Target note' }));
+  fireEvent.click(screen.getByRole('button', { name: '관계 추가' }));
+  await waitFor(() => expect(value.relate).toHaveBeenCalledOnce());
+  act(() => clearAccess());
+  await act(async () => { finish(); });
+  expectRevokedRelationPanel();
+  expect(value.relations).toHaveBeenCalledOnce();
+  expect(value.api.note).not.toHaveBeenCalled();
+  expect(value.onRevision).not.toHaveBeenCalled();
+});
+it('does not deliver a late note refresh to the parent after access has been lost', async () => {
+  const value = fixture();
+  let finish!: (note: Note) => void;
+  vi.mocked(value.api.note).mockImplementation(() => new Promise<Note>(resolve => { finish = resolve; }));
+  show(value);
+  fireEvent.change(await screen.findByRole('textbox', { name: '연결할 노트' }), { target: { value: 'Tar' } });
+  fireEvent.click(await screen.findByRole('button', { name: 'Target note' }));
+  fireEvent.click(screen.getByRole('button', { name: '관계 추가' }));
+  await waitFor(() => expect(value.api.note).toHaveBeenCalledOnce());
+  act(() => clearAccess());
+  await act(async () => { finish({ ...value.note, revision: 5 }); });
+  expectRevokedRelationPanel();
+  expect(value.onRevision).not.toHaveBeenCalled();
+});
+it('stops decision follow-up reads when access is lost while approval is pending', async () => {
+  const value = fixture();
+  let finish!: () => void;
+  value.decideRelation.mockImplementation(() => new Promise<void>(resolve => { finish = resolve; }));
+  vi.spyOn(window, 'prompt').mockReturnValue('Verified before permission changed');
+  show(value);
+  fireEvent.click(await screen.findByRole('button', { name: '관계 확정' }));
+  await waitFor(() => expect(value.decideRelation).toHaveBeenCalledOnce());
+  act(() => clearAccess());
+  await act(async () => { finish(); });
+  expectRevokedRelationPanel();
+  expect(value.relations).toHaveBeenCalledOnce();
+  expect(value.onRevision).not.toHaveBeenCalled();
 });

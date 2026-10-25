@@ -84,6 +84,14 @@ documents remain unchanged and carry a `LEGACY_UNCLASSIFIED` notice; their
 history is not inferred to be current knowledge. Deploy the matching backend
 contract before this client.
 
+Relation target lookup additionally requires `knowledgeRelationTargets(noteId,
+query, offset, limit)`. The API authorizes the current anchor and applies its
+same-space, same-visibility and private-owner rules before counting or paging.
+The relation picker replaces each 20-row page and uses the server's total and
+next-page flag; it does not filter the generic first page of readable notes.
+A target that changes before submission remains subject to the server's write
+checks, and a target-field rejection asks the reader to select it again.
+
 The API must explicitly allow the note client's origin in
 `CORS_ALLOWED_ORIGINS`, alongside the product web origins. For local use:
 

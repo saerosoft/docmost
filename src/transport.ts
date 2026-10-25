@@ -1,8 +1,9 @@
 export class ApiError extends Error {
-  constructor(message: string, public code: string) { super(message); }
+  constructor(message: string, public code: string, public field?: string) { super(message); }
 }
 
 const REQUEST_DEADLINE = 30_000;
+const NETWORK_MESSAGE = '서버 응답을 확인하지 못했습니다. 작성 중인 내용은 이 창에 남아 있습니다. 다시 시도해 주세요.';
 
 let generation = 0;
 const revoked = new Set<() => void>();
@@ -50,7 +51,7 @@ export async function request(path: string, init: RequestInit = {}) {
   if (epoch !== generation) throw new ApiError('접근 권한이 변경되었습니다.', 'ACCESS_DENIED');
   let response: Response;
   try { response = await fetch(path, { ...init, headers, signal, credentials: 'same-origin', cache: 'no-store' }); }
-  catch { throw new ApiError('서버에 연결하지 못했습니다. 작성 중인 내용은 이 창에 남아 있습니다.', 'NETWORK'); }
+  catch { throw new ApiError(NETWORK_MESSAGE, 'NETWORK'); }
   if (response.status === 401 || response.status === 403) {
     clearAccess();
     throw new ApiError('로그인 또는 접근 권한을 확인해 주세요. 열린 자료를 지웠습니다.', 'ACCESS_DENIED');
@@ -66,13 +67,19 @@ export async function request(path: string, init: RequestInit = {}) {
 export async function graphql<T>(query: string, variables: object = {}): Promise<T> {
   const epoch = generation;
   const response = await request('/graphql', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ query, variables }) });
-  const body: { data?: T; errors?: { message: string; extensions?: { code?: string; classification?: string } }[] } = await response.json();
+  let body: { data?: T; errors?: { message: string; extensions?: { code?: string; classification?: string; field?: string } }[] };
+  try { body = await response.json(); } catch (error) {
+    if (epoch !== generation) throw new ApiError('접근 권한이 변경되었습니다.', 'ACCESS_DENIED');
+    // A malformed JSON response remains a parse failure; an interrupted stream leaves a mutation's outcome uncertain.
+    if (error instanceof ApiError || (typeof error === 'object' && error !== null && 'name' in error && error.name === 'SyntaxError')) throw error;
+    throw new ApiError(NETWORK_MESSAGE, 'NETWORK');
+  }
   if (epoch !== generation) throw new ApiError('접근 권한이 변경되었습니다.', 'ACCESS_DENIED');
   if (body.errors?.length) {
     const failure = body.errors[0];
     const code = failure.extensions?.code || failure.extensions?.classification || 'GRAPHQL';
     if (['UNAUTHORIZED', 'UNAUTHENTICATED', 'FORBIDDEN', 'ACCESS_DENIED'].includes(code)) clearAccess();
-    throw new ApiError(failure.message, code);
+    throw new ApiError(failure.message, code, failure.extensions?.field);
   }
   if (!body.data) throw new ApiError('서버 응답이 비어 있습니다.', 'EMPTY_RESPONSE');
   return body.data;

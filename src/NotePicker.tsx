@@ -1,11 +1,18 @@
 import { useEffect, useState } from 'react';
 import { Button, TextInput } from '@mantine/core';
 import type { NoteApi, NoteSummary } from './model';
+import { RelationNotePicker } from './RelationNotePicker';
 
-interface Props { api: NoteApi; spaceId: string; label: string; selected: NoteSummary | null; onSelect: (note: NoteSummary | null) => void; exclude?: string[]; disabled?: boolean }
+interface Props { api: NoteApi; spaceId: string; label: string; selected: NoteSummary | null; onSelect: (note: NoteSummary | null) => void; exclude?: string[]; disabled?: boolean; relationNoteId?: string; error?: string }
 
-/** Finds a note by title among the notes the server lets this account read in one space. */
-export function NotePicker({ api, spaceId, label, selected, onSelect, exclude = [], disabled = false }: Props) {
+/** Relation targets use their authorized selector; navigation keeps its existing readable-note search. */
+export function NotePicker(props: Props) {
+  return props.relationNoteId
+    ? <RelationNotePicker key={props.spaceId + ':' + props.relationNoteId} api={props.api} noteId={props.relationNoteId} label={props.label} selected={props.selected} onSelect={props.onSelect} disabled={props.disabled} error={props.error}/>
+    : <ReadableNotePicker {...props}/>;
+}
+
+function ReadableNotePicker({ api, spaceId, label, selected, onSelect, exclude = [], disabled = false }: Props) {
   const [query, setQuery] = useState('');
   const [results, setResults] = useState<NoteSummary[] | null>(null);
   const [error, setError] = useState('');

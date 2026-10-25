@@ -96,3 +96,25 @@ it('pages all authorized immutable file revisions using the last file ID as the 
   vi.mocked(graphql).mockResolvedValueOnce({ noteFiles: [items[0]] });
   expect(await api.files('note', 'file-49')).toEqual({ items: [items[0]], nextCursor: null });
 });
+
+it('uses the authorized relation-target query and the server hasNext flag instead of filtering generic notes', async () => {
+  const items = [{ id: 'matching-target', title: 'Matching audience' }];
+  vi.mocked(graphql).mockResolvedValueOnce({ knowledgeRelationTargets: { noteId: 'anchor', total: 21, items, hasNext: true } });
+  expect(await api.findRelationNotes('anchor', '  needle  ', '20')).toEqual({ noteId: 'anchor', total: 21, items, nextCursor: '40' });
+  expect(graphql).toHaveBeenCalledExactlyOnceWith(
+    expect.stringContaining('knowledgeRelationTargets(noteId:$noteId,query:$query,offset:$offset,limit:20)'),
+    { noteId: 'anchor', query: 'needle', offset: 20 },
+  );
+  expect(vi.mocked(graphql).mock.calls[0][0]).not.toContain('knowledgeNotes(');
+});
+it('accepts a complete relation-target page even when it fills twenty rows and rejects a mismatched anchor', async () => {
+  const items = Array.from({ length: 20 }, (_, index) => ({ id: 'target-' + index, title: 'Target ' + index }));
+  vi.mocked(graphql).mockResolvedValueOnce({ knowledgeRelationTargets: { noteId: 'anchor', total: 20, items, hasNext: false } });
+  expect((await api.findRelationNotes('anchor', '', null)).nextCursor).toBeNull();
+  vi.mocked(graphql).mockResolvedValueOnce({ knowledgeRelationTargets: { noteId: 'other', total: 1, items: [items[0]], hasNext: false } });
+  await expect(api.findRelationNotes('anchor', '', null)).rejects.toMatchObject({ code: 'RESPONSE_MISMATCH' });
+});
+it.each(['-1', '20.5', 'NaN', '100020'])('rejects invalid relation-target offset %s before an API call', async cursor => {
+  await expect(api.findRelationNotes('anchor', '', cursor)).rejects.toMatchObject({ code: 'INVALID_INPUT' });
+  expect(graphql).not.toHaveBeenCalled();
+});
