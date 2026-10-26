@@ -16,7 +16,7 @@ test('pages real accumulation history and shows original evidence and actual bef
   const owner = await account(browser, 'owner');
   try {
     const page = await owner.newPage();
-    await page.goto(`/?space=${fixture!.space}&note=${records!.SPACE.noteId}`);
+    await page.goto(`./?space=${fixture!.space}&note=${records!.SPACE.noteId}`);
     const current = page.getByRole('region', { name: '현재 정리', exact: true });
     await expect(current.getByText('기존 본문은 작성 구분과 유효성을 확인해야 합니다.', { exact: true })).toBeVisible();
     await expect(current.getByText('분리 확인된 현재 항목이 없습니다.', { exact: true })).toBeVisible();
@@ -52,10 +52,10 @@ test('keeps private evidence and administrator comparisons out of unauthorized a
   const peer = await account(browser, 'peer');
   try {
     const page = await owner.newPage();
-    await page.goto(`/?space=${fixture!.space}&note=${records!.PRIVATE.noteId}`);
+    await page.goto(`./?space=${fixture!.space}&note=${records!.PRIVATE.noteId}`);
     await page.locator('.note-accumulations article summary').first().click();
     await expect(page.locator('.note-evidence .visibility-label').first()).toHaveText('본인만');
-    await page.goto(`/?space=${fixture!.space}&note=${records!.ADMINISTRATORS.noteId}`);
+    await page.goto(`./?space=${fixture!.space}&note=${records!.ADMINISTRATORS.noteId}`);
     await page.locator('.note-accumulations article summary').first().click();
     await expect(page.locator('.note-evidence .visibility-label').first()).toHaveText('관리자 전용');
     for (const visibility of ['PRIVATE', 'ADMINISTRATORS'] as const) {
@@ -74,7 +74,7 @@ test('keeps private evidence and administrator comparisons out of unauthorized a
     }
     await role(owner.request, fixture!.peer, 'OWNER');
     const peerPage = await peer.newPage();
-    await peerPage.goto(`/?space=${fixture!.space}&note=${records!.ADMINISTRATORS.noteId}`);
+    await peerPage.goto(`./?space=${fixture!.space}&note=${records!.ADMINISTRATORS.noteId}`);
     await peerPage.locator('.note-accumulations article summary').first().click();
     await peerPage.locator('.note-accumulations').getByRole('button', { name: '변경 전후·반영 기준 보기', exact: true }).first().click();
     await expect(peerPage.getByRole('region', { name: '변경 전후와 반영 기준', exact: true })).toBeVisible();
@@ -94,7 +94,7 @@ test('shows the actual approved rule version pinned to an applied change', async
     expect(version.ruleVersion.rulesetId).toBe(ruleRecord!.rulesetId);
     expect(version.ruleVersion.versionNumber).toBe(ruleRecord!.versionNumber);
     const page = await owner.newPage();
-    await page.goto(`/?space=${fixture!.space}&note=${ruleRecord!.noteId}`);
+    await page.goto(`./?space=${fixture!.space}&note=${ruleRecord!.noteId}`);
     const history = page.locator('.note-accumulations');
     await history.locator('article summary').first().click();
     const link = history.getByRole('link', { name: `${ruleRecord!.ruleName} v${ruleRecord!.versionNumber}`, exact: true });
@@ -114,7 +114,7 @@ test('restores a legacy revision without reclassifying its mixed body as human o
     const before = (await graphql<NoteState>(owner.request, query, { id: records!.SPACE.noteId })).knowledgeNote;
     expect(before.bodyOrigin).toBe('LEGACY_UNCLASSIFIED');
     const page = await owner.newPage();
-    await page.goto(`/?space=${fixture!.space}&note=${records!.SPACE.noteId}`);
+    await page.goto(`./?space=${fixture!.space}&note=${records!.SPACE.noteId}`);
     await page.getByRole('tab', { name: '이력', exact: true }).click();
     await expect(page.getByText('이 개정은 작성 구분을 확인해야 하는 기존 본문입니다. 복원할 때도 원문과 작성 구분을 유지합니다.', { exact: true })).toBeVisible();
     page.once('dialog', dialog => void dialog.accept());

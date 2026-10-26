@@ -14,6 +14,7 @@ import { autoScrollForElements } from '@atlaskit/pragmatic-drag-and-drop-auto-sc
 import type { TreeNode, DropOp } from '../model/tree-model.types';
 import { DocTreeRow } from './doc-tree-row';
 import styles from '../styles/tree.module.css';
+import layout from '@knowledge/docmost/TreeLayout.module.css';
 
 export type RenderRowProps<T extends object> = {
   node: TreeNode<T>;
@@ -401,7 +402,7 @@ function DocTreeInner<T extends object>(
         (row.node as { hasChildren?: boolean }).hasChildren === true;
       const isOpen = openIds.has(row.node.id);
 
-      // This client navigates one paged subtree; expanding sibling subtrees would corrupt that path.
+      // Expansion loads one authorized child page while retaining sibling branches.
       switch (e.key) {
         case 'ArrowDown':
           e.preventDefault();
@@ -477,7 +478,7 @@ function DocTreeInner<T extends object>(
 
   if (data.length === 0 && emptyState) {
     return (
-      <div className={styles.treeContainer}>
+      <div className={styles.treeContainer + " " + layout.treeContainer}>
         {emptyState}
         {footer}
       </div>
@@ -488,7 +489,7 @@ function DocTreeInner<T extends object>(
   const totalSize = virtualizer.getTotalSize();
 
   return (
-    <div ref={scrollRef} className={styles.treeContainer}>
+    <div ref={scrollRef} className={styles.treeContainer + " " + layout.treeContainer}>
       <ul
         role="tree"
         aria-label={ariaLabel}

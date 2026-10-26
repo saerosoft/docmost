@@ -1,5 +1,5 @@
 import classes from "./styles/editor.module.css";
-import React from "react";
+import React, { type ReactNode } from "react";
 import { Container } from "@mantine/core";
 import type { JSONContent } from "@tiptap/core";
 import { TitleEditor } from "./title-editor";
@@ -18,17 +18,20 @@ export interface FullEditorProps {
   title: string;
   content: JSONContent;
   editable: boolean;
+  showToolbar?: boolean;
+  byline?: ReactNode;
   onTitleChange: (title: string) => void;
   onChange: (content: JSONContent) => void;
   onInvalid: () => void;
 }
 
-export function FullEditor({ api, pageId, title, content, editable, onTitleChange, onChange, onInvalid }: FullEditorProps) {
+export function FullEditor({ api, pageId, title, content, editable, showToolbar = false, byline, onTitleChange, onChange, onInvalid }: FullEditorProps) {
   return (
     <AttachmentContext.Provider value={{ api, noteId: pageId, editable }}>
-      <Container fluid className={classes.editor} style={{ display: "flex", flexDirection: "column" }}>
-        {editable && <MemoizedFixedToolbar />}
+      <Container size={900} className={classes.editor} style={{ display: "flex", flexDirection: "column" }}>
+        {editable && showToolbar && <MemoizedFixedToolbar />}
         <MemoizedTitleEditor pageId={pageId} title={title} editable={editable} onChange={onTitleChange} />
+        {byline && <div className={classes.byline}>{byline}</div>}
         <MemoizedPageEditor pageId={pageId} content={content} editable={editable} onChange={onChange} onInvalid={onInvalid} />
       </Container>
     </AttachmentContext.Provider>

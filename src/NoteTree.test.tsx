@@ -53,7 +53,7 @@ it('moves a dragged note under the note it is dropped on', async () => {
   drag(row('Alpha'), row('Beta'));
   await waitFor(() => expect(value.move).toHaveBeenCalledExactlyOnceWith(['note-0'], 'note-1', 'space'));
   const destination = await screen.findByRole('link', { name: '이동한 공간에서 열기' });
-  expect(destination.getAttribute('href')).toBe('/?space=space&note=note-0');
+  expect(destination.getAttribute('href')).toBe(`${import.meta.env.BASE_URL}?space=space&note=note-0`);
   expect(destination.getAttribute('target')).toBe('_blank');
 });
 
@@ -95,7 +95,7 @@ it('uses core tree roving focus and typeahead without fetching another subtree',
   expect(document.activeElement).toBe(screen.getByRole('treeitem', { name: 'Gamma' }));
 });
 
-it('keeps a paged subtree bounded when a bulk-expand key cannot represent sibling subtrees', async () => {
+it('does not bulk-fetch sibling branches and opens only the requested child page', async () => {
   const value = show();
   const first = await screen.findByRole('treeitem', { name: 'Alpha' });
   first.focus(); fireEvent.keyDown(first, { key: '*' });
@@ -330,10 +330,10 @@ it.each([false, true])('moves to the root from native source data after the sour
 it('uses the current parent location as the native drop target without changing source selection semantics', async () => {
   const value = show();
   await screen.findByRole('treeitem', { name: 'Alpha' });
-  fireEvent.keyDown(row('Alpha'), { key: 'ArrowRight' });
+  fireEvent.click(screen.getByRole('button', { name: 'Alpha 하위 트리에 집중' }));
   await waitFor(() => expect(value.tree).toHaveBeenLastCalledWith('space', 'note-0', null));
   await waitFor(() => expect(screen.getByRole<HTMLButtonElement>('button', { name: '새로고침' }).disabled).toBe(false));
-  fireEvent.keyDown(row('Beta'), { key: 'ArrowRight' });
+  fireEvent.click(screen.getByRole('button', { name: 'Beta 하위 트리에 집중' }));
   await waitFor(() => expect(value.tree).toHaveBeenLastCalledWith('space', 'note-1', null));
   await waitFor(() => expect(screen.getByRole<HTMLButtonElement>('button', { name: '새로고침' }).disabled).toBe(false));
 

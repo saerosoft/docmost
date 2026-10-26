@@ -1,4 +1,6 @@
 import { expect, test, type Page } from '@playwright/test';
+import { fixture } from './realApi';
+import { noteWorkspace, openDetails, openKnowledge, openToolbar } from './nativeControls';
 
 const created = new Set<string>();
 
@@ -12,12 +14,16 @@ async function graphQL<T>(page: Page, query: string, variables: object = {}): Pr
 }
 
 async function createNote(page: Page, title: string) {
-  await page.getByLabel('새 노트 제목', { exact: false }).fill(title);
+  const titleInput = page.getByLabel('새 노트 제목', { exact: false });
+  if (!await titleInput.isVisible()) await page.getByRole('button', { name: '새 페이지', exact: true }).click();
+  await titleInput.fill(title);
   await page.getByRole('button', { name: '현재 경로에 만들기', exact: true }).click();
   await expect(page.getByRole('textbox', { name: '노트 제목', exact: true })).toHaveText(title);
   const id = new URL(page.url()).searchParams.get('note');
   expect(id).toMatch(/^[a-f0-9-]{36}$/);
   created.add(id!);
+  await page.getByRole('textbox', { name: '노트 본문', exact: true }).click();
+  await openToolbar(page);
   return id!;
 }
 
@@ -28,8 +34,9 @@ test.beforeEach(async ({ page }) => {
     if (!identifier || !password) throw new Error('Set NOTE_GUI_E2E_STORAGE_STATE or NOTE_GUI_E2E_EMAIL and NOTE_GUI_E2E_PASSWORD for a local test account.');
     await graphQL(page, 'mutation($input:LoginInput!){login(input:$input){id}}', { input: { identifier, password, rememberMe: false } });
   }
-  await page.goto('/');
-  await expect(page.getByLabel('새 노트 제목', { exact: false })).toBeVisible();
+  const space = process.env.NOTE_GUI_E2E_SPACE || fixture?.space;
+  await page.goto(`./${space ? `?space=${encodeURIComponent(space)}` : ''}`);
+  await expect(page.getByRole('button', { name: '새 페이지', exact: true })).toBeVisible();
 });
 
 test.afterEach(async ({ page }) => {
@@ -43,20 +50,27 @@ test.afterEach(async ({ page }) => {
   created.clear();
 });
 
-test('saves structured notes with the KN-02 context and a compact editor', async ({ page }) => {
+test('saves structured notes with contextual KN-02 information and the native document canvas', async ({ page }) => {
   const title = `GUI acceptance ${crypto.randomUUID().slice(0, 8)}`;
   const id = await createNote(page, title);
   const titleBounds = await page.getByRole('textbox', { name: '노트 제목', exact: true }).boundingBox();
   expect(titleBounds!.height).toBeLessThan(140);
+  await expect(page.getByRole('heading', { name: '현재 정리', exact: true })).not.toBeVisible();
+  await page.getByRole('button', { name: '지식 정보', exact: true }).click();
   await expect(page.getByRole('heading', { name: '현재 정리', exact: true })).toBeVisible();
   await expect(page.getByRole('heading', { name: '누적 이력', exact: true })).toBeVisible();
   await expect(page.getByRole('heading', { name: '새 소스 반영 기준', exact: true })).toBeVisible();
   const summaryBounds = (await page.getByRole('region', { name: '현재 정리', exact: true }).boundingBox())!;
   const policyBounds = (await page.getByRole('region', { name: '새 소스 반영 기준', exact: true }).boundingBox())!;
-  expect(summaryBounds.x).toBeLessThan(policyBounds.x);
+  const contextBounds = (await page.getByRole('complementary', { name: '페이지 컨텍스트', exact: true }).boundingBox())!;
+  expect(summaryBounds.x).toBeGreaterThanOrEqual(contextBounds.x);
+  expect(policyBounds.x).toBeGreaterThanOrEqual(contextBounds.x);
+  expect(summaryBounds.y).toBeLessThan(policyBounds.y);
   expect(summaryBounds.y).toBeLessThan(800);
   await expect(page.getByText('반영된 정리가 없습니다.', { exact: true })).toBeVisible();
   await expect(page.getByText('현재 유효한 정리가 없습니다.', { exact: true })).toBeVisible();
+  await page.getByRole('button', { name: '노트 상세 닫기', exact: true }).click();
+  await expect(page.getByRole('heading', { name: '현재 정리', exact: true })).not.toBeVisible();
   const body = page.getByRole('textbox', { name: '노트 본문', exact: true });
   await body.fill('Human-authored note.');
   await body.press('End');
@@ -69,9 +83,11 @@ test('saves structured notes with the KN-02 context and a compact editor', async
   await expect(body).toHaveText('Human-authored note. Bold detail.');
   const saved = await graphQL<{ knowledgeNote: { richBody: string } }>(page, 'query($id:UUID!){knowledgeNote(id:$id){richBody}}', { id });
   expect(JSON.parse(saved.knowledgeNote.richBody).content[0].content[1].marks).toContainEqual({ type: 'bold' });
+  await page.getByRole('button', { name: '댓글 및 노트 상세', exact: true }).click();
   await page.getByRole('textbox', { name: '댓글', exact: true }).fill('Browser acceptance comment.');
   await page.getByRole('button', { name: '댓글 남기기', exact: true }).click();
   await expect(page.getByText('Browser acceptance comment.', { exact: true })).toBeVisible();
+  await openDetails(page);
   await page.getByRole('tab', { name: '속성', exact: true }).click();
   await page.getByRole('button', { name: '속성 추가', exact: true }).click();
   await page.getByRole('textbox', { name: '속성 이름', exact: true }).fill('acceptance');
@@ -80,19 +96,22 @@ test('saves structured notes with the KN-02 context and a compact editor', async
   await expect(page.getByText('속성 변경을 저장했습니다.', { exact: true })).toBeVisible();
   await page.reload();
   await expect(body).toHaveText('Human-authored note. Bold detail.');
+  await page.getByRole('button', { name: '댓글 및 노트 상세', exact: true }).click();
   await page.getByRole('tab', { name: '속성', exact: true }).click();
   await expect(page.getByLabel('값', { exact: true })).toHaveValue('verified');
   await page.getByRole('button', { name: 'acceptance 속성 삭제', exact: true }).click();
   await page.getByRole('button', { name: '삭제 확인', exact: true }).click();
   await expect(page.getByText('아직 속성이 없습니다.', { exact: true })).toBeVisible();
   await page.setViewportSize({ width: 390, height: 844 });
+  expect(await page.evaluate(() => window.innerWidth)).toBe(390);
+  await page.getByRole('button', { name: '지식 정보', exact: true }).click();
   await expect(page.getByRole('heading', { name: '현재 정리', exact: true })).toBeVisible();
   expect(await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth)).toBeLessThanOrEqual(1);
   await page.screenshot({ path: '.tmp/browser/note-mobile.png', fullPage: true });
   await page.getByRole('heading', { name: '현재 정리', exact: true }).scrollIntoViewIfNeeded();
   await expect(page.getByRole('heading', { name: '현재 정리', exact: true })).toBeInViewport();
   await page.screenshot({ path: '.tmp/browser/note-mobile-context.png', fullPage: true });
-  await expect(page.getByRole('alert')).toHaveCount(0);
+  await expect(noteWorkspace(page).getByRole('alert')).toHaveCount(0);
 });
 
 test('preserves tab drafts, isolates split panes, rejects stale saves and restores a revision', async ({ page }) => {
@@ -113,8 +132,7 @@ test('preserves tab drafts, isolates split panes, rejects stale saves and restor
   await left.getByRole('button', { name: '저장', exact: true }).click();
   await expect(left.getByRole('button', { name: '저장', exact: true })).toBeDisabled();
   await page.getByRole('button', { name: '두 창으로', exact: true }).click();
-  await page.getByRole('combobox', { name: '노트를 열 창', exact: true }).click();
-  await page.getByRole('option', { name: '오른쪽 창', exact: true }).click();
+  await page.getByText('오른쪽 창', { exact: true }).click();
   await page.getByRole('treeitem', { name: title, exact: true }).click();
   const right = page.getByRole('region', { name: '오른쪽 편집 창', exact: true });
   const rightBody = right.getByRole('textbox', { name: '노트 본문', exact: true });
@@ -133,7 +151,8 @@ test('preserves tab drafts, isolates split panes, rejects stale saves and restor
   page.once('dialog', dialog => dialog.accept());
   await right.getByRole('button', { name: '서버 버전 열기', exact: true }).click();
   await expect(rightBody).toHaveText('First writer through the left pane.');
-  await right.getByRole('tab', { name: '이력', exact: true }).click();
+  await right.getByRole('button', { name: '페이지 메뉴', exact: true }).click();
+  await right.getByRole('menuitem', { name: '페이지 이력', exact: true }).click();
   await right.getByRole('button', { name: /개정 2 ·/ }).click();
   page.once('dialog', dialog => dialog.accept());
   await right.getByRole('button', { name: '복원', exact: true }).click();
@@ -150,8 +169,13 @@ test('round-trips editable Mermaid, Draw.io and Excalidraw attachment revisions'
   const id = await createNote(page, `GUI diagrams ${crypto.randomUUID().slice(0, 8)}`);
   const body = page.getByRole('textbox', { name: '노트 본문', exact: true });
   async function insert(kind: string) {
+    await openToolbar(page);
     await body.click();
     await body.press('Control+End');
+    if (!await page.getByRole('button', { name: '다이어그램 삽입', exact: true }).isVisible()) {
+      await page.getByRole('button', { name: '페이지 메뉴', exact: true }).click();
+      await page.getByRole('menuitem', { name: '서식 도구 모음 표시', exact: true }).click();
+    }
     await page.getByRole('button', { name: '다이어그램 삽입', exact: true }).click();
     await page.getByRole('menuitem', { name: kind, exact: true }).click();
   }
@@ -170,24 +194,61 @@ test('round-trips editable Mermaid, Draw.io and Excalidraw attachment revisions'
   await expect(page.getByLabel('Mermaid 원본', { exact: true })).toHaveValue('graph TD\n  API --> Note');
   await page.getByLabel('Mermaid 원본', { exact: true }).fill('graph TD\n  API --> Note --> History');
   await page.getByRole('button', { name: '첨부 개정 저장 후 노트에 적용', exact: true }).click();
+  await saveNote();
   await insert('drawio');
   await page.getByRole('button', { name: '다이어그램 편집', exact: true }).click();
   const xml = '<mxfile><diagram name="Acceptance"><mxGraphModel><root><mxCell id="0"/><mxCell id="1" parent="0"/><mxCell id="2" value="API note" vertex="1" parent="1"><mxGeometry x="20" y="20" width="120" height="60" as="geometry"/></mxCell></root></mxGraphModel></diagram></mxfile>';
-  await page.getByLabel('Draw.io XML', { exact: true }).fill(xml);
-  await page.getByRole('button', { name: '첨부 개정 저장 후 노트에 적용', exact: true }).click();
-  await saveNote();
-  await page.reload();
+  const graphical = await page.locator('iframe[title="Draw.io editor"]').count() > 0;
+  let initialDrawioId: string | undefined;
+  if (graphical) {
+    // Prepare an isolated native shape fixture. Actual changes below happen in
+    // the graphical editor; a configured embed never edits its source textarea.
+    await expect(page.getByLabel('Draw.io XML', { exact: true })).toHaveJSProperty('readOnly', true);
+    await page.getByRole('button', { name: 'Draw.io 닫기', exact: true }).click();
+    const saved = await graphQL<{ knowledgeNote: { title: string; revision: number; spaceId: string; visibility: string; richBody: string } }>(page, 'query($id:UUID!){knowledgeNote(id:$id){title revision spaceId visibility richBody}}', { id });
+    const current = saved.knowledgeNote;
+    const csrf = await (await page.request.get('/api/csrf')).json();
+    const upload = await page.request.post('/api/files', { headers: { 'X-XSRF-TOKEN': csrf.token }, multipart: { noteId: id, spaceId: current.spaceId, visibility: current.visibility, file: { name: 'ui-acceptance.drawio', mimeType: 'application/octet-stream', buffer: Buffer.from(xml) } } });
+    expect(upload.ok()).toBe(true);
+    initialDrawioId = (await upload.json() as { id: string }).id;
+    const document = JSON.parse(current.richBody);
+    const diagram = document.content.find((node: { type: string }) => node.type === 'drawio');
+    if (diagram) diagram.attrs = { fileId: initialDrawioId };
+    else document.content.push({ type: 'drawio', attrs: { fileId: initialDrawioId } });
+    await graphQL(page, 'mutation($id:UUID!,$input:SaveRichNoteInput!){saveRichNote(id:$id,input:$input){id}}', { id, input: { title: current.title, expectedRevision: current.revision, richBody: JSON.stringify(document), schemaVersion: 1, idempotencyKey: crypto.randomUUID() } });
+    page.once('dialog', dialog => dialog.accept());
+    await page.reload();
+  } else {
+    await page.getByLabel('Draw.io XML', { exact: true }).fill(xml);
+    await page.getByRole('button', { name: '첨부 개정 저장 후 노트에 적용', exact: true }).click();
+    await saveNote();
+    await page.reload();
+  }
   await page.getByRole('button', { name: '다이어그램 편집', exact: true }).click();
   await expect(page.getByLabel('Draw.io XML', { exact: true })).toHaveValue(xml);
   await expect(page.getByRole('button', { name: 'Draw.io 닫기', exact: true })).toBeInViewport();
-  const updatedXml = xml.replace('API note', 'Reopened API note');
-  await page.getByLabel('Draw.io XML', { exact: true }).fill(updatedXml);
-  await page.getByRole('button', { name: '첨부 개정 저장 후 노트에 적용', exact: true }).click();
+  let updatedXml = xml.replace('API note', 'Reopened API note');
+  if (graphical) {
+    const frame = page.frameLocator('iframe[title="Draw.io editor"]');
+    await expect(frame.getByText('API note', { exact: true })).toBeVisible();
+    const canvas = (await page.locator('iframe[title="Draw.io editor"]').boundingBox())!;
+    expect(canvas.height).toBeGreaterThan((await page.evaluate(() => window.innerHeight)) * .6);
+    await frame.getByText('API note', { exact: true }).dblclick();
+    const editor = frame.locator('.mxCellEditor[contenteditable="true"]');
+    await editor.fill('Reopened API note'); await editor.press('Control+Enter');
+    await expect(page.getByLabel('Draw.io XML', { exact: true })).toHaveValue(/Reopened API note/);
+    updatedXml = await page.getByLabel('Draw.io XML', { exact: true }).inputValue();
+    await frame.getByText('Save', { exact: true }).click();
+    await expect(page.getByRole('dialog')).toHaveCount(0);
+  } else {
+    await page.getByLabel('Draw.io XML', { exact: true }).fill(updatedXml);
+    await page.getByRole('button', { name: '첨부 개정 저장 후 노트에 적용', exact: true }).click();
+  }
   await insert('excalidraw');
   await page.getByRole('button', { name: '드로잉 편집', exact: true }).click();
   const canvas = page.locator('.excalidraw canvas.interactive');
   await expect(canvas).toBeVisible();
-  const rectangle = page.getByRole('radio', { name: 'Rectangle', exact: true });
+  const rectangle = page.getByRole('radio', { name: /^(Rectangle|사각형)$/ });
   await page.locator('label').filter({ has: rectangle }).click();
   await expect(rectangle).toBeChecked();
   const bounds = (await canvas.boundingBox())!;
@@ -195,7 +256,7 @@ test('round-trips editable Mermaid, Draw.io and Excalidraw attachment revisions'
   await page.mouse.down();
   await page.mouse.move(bounds.x + bounds.width * .45 + 220, bounds.y + 340, { steps: 8 });
   await page.mouse.up();
-  await expect(page.getByRole('button', { name: 'Undo', exact: true })).toBeEnabled();
+  await expect(page.getByRole('dialog').getByRole('button', { name: /^(Undo|실행 취소)$/ })).toBeEnabled();
   await page.getByRole('button', { name: '저장 후 나가기', exact: true }).click();
   await saveNote();
   await page.reload();
@@ -203,14 +264,14 @@ test('round-trips editable Mermaid, Draw.io and Excalidraw attachment revisions'
   await expect(canvas).toBeVisible();
   const firstSave = await graphQL<{ knowledgeNote: { richBody: string } }>(page, 'query($id:UUID!){knowledgeNote(id:$id){richBody}}', { id });
   const originalSceneId = JSON.parse(firstSave.knowledgeNote.richBody).content.find((node: { type: string }) => node.type === 'excalidraw').attrs.fileId as string;
-  const ellipse = page.getByRole('radio', { name: 'Ellipse', exact: true });
+  const ellipse = page.getByRole('radio', { name: /^(Ellipse|타원)$/ });
   await page.locator('label').filter({ has: ellipse }).click();
   const reopenedBounds = (await canvas.boundingBox())!;
   await page.mouse.move(reopenedBounds.x + reopenedBounds.width * .65, reopenedBounds.y + 380);
   await page.mouse.down();
   await page.mouse.move(reopenedBounds.x + reopenedBounds.width * .65 + 120, reopenedBounds.y + 460, { steps: 8 });
   await page.mouse.up();
-  await expect(page.getByRole('button', { name: 'Undo', exact: true })).toBeEnabled();
+  await expect(page.getByRole('dialog').getByRole('button', { name: /^(Undo|실행 취소)$/ })).toBeEnabled();
   await page.getByRole('button', { name: '저장 후 나가기', exact: true }).click();
   await saveNote();
   await page.reload();
@@ -230,7 +291,11 @@ test('round-trips editable Mermaid, Draw.io and Excalidraw attachment revisions'
   expect(oldScene.elements[0].type).toBe('rectangle');
   const drawioId = nodes.find(node => node.type === 'drawio')!.attrs!.fileId;
   expect(await (await page.request.get(`/api/files/${drawioId}`)).text()).toBe(updatedXml);
-  await expect(page.getByRole('alert')).toHaveCount(0);
+  if (initialDrawioId) {
+    expect(drawioId).not.toBe(initialDrawioId);
+    expect(await (await page.request.get(`/api/files/${initialDrawioId}`)).text()).toBe(xml);
+  }
+  await expect(noteWorkspace(page).getByRole('alert')).toHaveCount(0);
 });
 
 test('records relationships and backlinks, then moves selected notes into a subtree', async ({ page }) => {
@@ -242,12 +307,14 @@ test('records relationships and backlinks, then moves selected notes into a subt
   const secondTitle = `GUI second ${suffix}`;
   const secondId = await createNote(page, secondTitle);
   await page.getByRole('tab', { name: firstTitle, exact: true }).click();
+  await page.getByRole('button', { name: '댓글 및 노트 상세', exact: true }).click();
   await page.getByRole('tab', { name: '관계', exact: true }).click();
   await page.getByRole('textbox', { name: '연결할 노트', exact: true }).fill(secondTitle);
   await page.getByRole('list', { name: '연결할 노트 검색 결과', exact: true }).getByRole('button', { name: secondTitle, exact: true }).click();
   await page.getByRole('button', { name: '관계 추가', exact: true }).click();
   await expect(page.getByText('이 노트 → 연결된 노트', { exact: true })).toBeVisible();
   await page.getByRole('tab', { name: secondTitle, exact: true }).click();
+  await openDetails(page);
   await page.getByRole('tab', { name: '관계', exact: true }).click();
   await expect(page.getByText('연결된 노트 → 이 노트', { exact: true })).toBeVisible();
   await page.getByRole('checkbox', { name: `${firstTitle} 선택`, exact: true }).check();
@@ -265,10 +332,10 @@ test('records relationships and backlinks, then moves selected notes into a subt
   await page.getByRole('button', { name: `${parentTitle} 하위 트리 보기`, exact: true }).click();
   await expect(page.getByRole('treeitem', { name: firstTitle, exact: true })).toBeVisible();
   await expect(page.getByRole('treeitem', { name: secondTitle, exact: true })).toBeVisible();
-  const siblings = page.getByRole('tree', { name: '현재 경로의 노트', exact: true }).getByRole('treeitem');
+  const siblings = page.getByRole('tree', { name: '현재 경로의 노트', exact: true }).locator('[role="treeitem"][aria-level="2"]');
   await expect(siblings).toHaveCount(2);
   await siblings.nth(0).focus();
   await page.keyboard.press('ArrowDown');
   await expect(siblings.nth(1)).toBeFocused();
-  await expect(page.getByRole('alert')).toHaveCount(0);
+  await expect(noteWorkspace(page).getByRole('alert')).toHaveCount(0);
 });

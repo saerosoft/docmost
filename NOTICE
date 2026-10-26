@@ -1,12 +1,12 @@
 Knowledge Engine Note GUI
 Copyright 2026 Knowledge Engine contributors
 
-This application includes modified portions of Docmost v0.96.0,
+This browser library includes modified portions of Docmost v0.96.0,
 commit 9b3e5dd3dc21588fa20c02c5b8646d2f46ee73af.
 Copyright Docmost contributors. https://github.com/docmost/docmost
 Docmost core is licensed under GNU Affero General Public License version 3.
 The full license is provided in LICENSE. Covered modifications and the
-complete source of this application are distributed under AGPL-3.0-only.
+complete source of this library are distributed under AGPL-3.0-only.
 
 Retained source and modifications are listed in upstream-manifest.json.
 The actual core page/editor, tree, comments, history and diagrams are adapted
@@ -16,7 +16,11 @@ Hocuspocus provider, Yjs persistence or browser body database is included.
 
 Third-party packages remain under their respective licenses. package.json,
 the release lockfile and dependency-license notices accompany releases.
-No conclusion about the legal independence of other applications is asserted.
+The library source archive does not declare the consuming product's source
+obligations discharged. A separate package, isolated React root, browser chunk
+or process is not asserted to exempt the host. Actual integration and
+distribution determine the source scope to be addressed; no conclusion about
+the legal independence of the consuming product is asserted.
 
 Additional SDK, font and diff-engine license texts and copyright notices are
 provided in third-party/ and the release source archive. The Excalidraw SDK

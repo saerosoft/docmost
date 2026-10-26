@@ -16,7 +16,7 @@ test('moves a private subtree across spaces without discarding either pane draft
     const parent = await create(title);
     const child = await create('Private moved child', parent);
     const page = await owner.newPage();
-    await page.goto(`/?space=${fixture!.space}&note=${parent}&right=${fixture!.sharedNote}`);
+    await page.goto(`./?space=${fixture!.space}&note=${parent}&right=${fixture!.sharedNote}`);
     const left = page.getByRole('region', { name: '왼쪽 편집 창', exact: true });
     const right = page.getByRole('region', { name: '오른쪽 편집 창', exact: true });
     await left.getByRole('textbox', { name: '노트 본문', exact: true }).fill('Unsaved moved-note draft.');
@@ -24,10 +24,12 @@ test('moves a private subtree across spaces without discarding either pane draft
     await page.getByRole('checkbox', { name: `${title} 선택`, exact: true }).check();
     await page.getByText('선택한 노트 이동 · 1', { exact: true }).click();
     await page.getByRole('combobox', { name: '대상 공간', exact: true }).click();
-    await page.getByRole('option', { name: 'Acceptance destination', exact: true }).click();
+    const spaces = await graphql<{ spaces: { id: string; name: string }[] }>(owner.request, 'query { spaces { id name } }');
+    const destinationName = spaces.spaces.find(space => space.id === fixture!.destination)!.name;
+    await page.getByRole('option', { name: destinationName, exact: true }).click();
     await page.getByRole('button', { name: '선택 노트 이동', exact: true }).click();
     const destination = page.getByRole('link', { name: '이동한 공간에서 열기', exact: true });
-    await expect(destination).toHaveAttribute('href', `/?space=${fixture!.destination}&note=${parent}`);
+    await expect(destination).toHaveAttribute('href', `${new URL(page.url()).pathname}?space=${fixture!.destination}&note=${parent}`);
     await expect(left.getByRole('textbox', { name: '노트 본문', exact: true })).toHaveText('Unsaved moved-note draft.');
     await expect(right.getByRole('textbox', { name: '노트 본문', exact: true })).toHaveText('Independent other-pane draft.');
     await expect(page.getByRole('treeitem', { name: title, exact: true })).toHaveCount(0);
@@ -35,7 +37,7 @@ test('moves a private subtree across spaces without discarding either pane draft
     const moved = await popup;
     await expect(moved.getByRole('textbox', { name: '노트 본문', exact: true })).toHaveText('Private subtree content.');
     await expect(moved).toHaveURL(new RegExp(`space=${fixture!.destination}&note=${parent}`));
-    await moved.goto(`/?space=${fixture!.destination}&note=${child}`);
+    await moved.goto(`./?space=${fixture!.destination}&note=${child}`);
     await expect(moved.getByRole('treeitem', { name: 'Private moved child', exact: true })).toBeVisible();
     await expect(moved.locator('.breadcrumb')).toContainText(title);
     const query = 'query($id:UUID!){knowledgeNote(id:$id){id spaceId parentId ownerId visibility revision body}}';

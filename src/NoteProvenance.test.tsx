@@ -6,6 +6,7 @@ import type { Note, NoteApi } from './model';
 import { NoteProvenance } from './NoteProvenance';
 
 beforeEach(() => {
+  vi.stubEnv('DEV', true); vi.stubEnv('VITE_WEB_ORIGIN', '');
   Object.defineProperty(window, 'matchMedia', { configurable: true, value: vi.fn(() => ({ matches: false, addEventListener: vi.fn(), removeEventListener: vi.fn() })) });
 });
 afterEach(() => { cleanup(); vi.unstubAllEnvs(); });

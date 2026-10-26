@@ -62,6 +62,26 @@ it('keeps history selection and comment drafts independent for the same note in 
   expect(right.getByRole('textbox', { name: '개정 원문' }).textContent).toContain('New body');
 });
 
+it('retains an unsent comment when switching contextual panels and hiding the entire sidebar', async () => {
+  const client = { ...api, history: vi.fn().mockResolvedValue({ items: revisions, nextCursor: null }), comments: vi.fn().mockResolvedValue({ items: [], nextCursor: null }) };
+  function panel(hidden: boolean) {
+    return <DocmostPaneProvider><div hidden={hidden}><NotePanels api={client} note={note} dirty={false} onRestore={vi.fn()} onOpen={vi.fn()} onRevision={vi.fn()}/></div></DocmostPaneProvider>;
+  }
+  const view = render(panel(false));
+  const comment = await screen.findByRole('textbox', { name: '댓글' });
+  await waitFor(() => expect(comment.getAttribute('contenteditable')).toBe('true'));
+  comment.textContent = 'Keep this unsent comment'; fireEvent.input(comment);
+  fireEvent.click(screen.getByRole('tab', { name: '이력' }));
+  await screen.findByRole('textbox', { name: '개정 원문' });
+  expect(screen.queryByRole('textbox', { name: '댓글' })).toBeNull();
+  fireEvent.click(screen.getByRole('tab', { name: '댓글' }));
+  expect(screen.getByRole('textbox', { name: '댓글' }).textContent).toBe('Keep this unsent comment');
+  view.rerender(panel(true));
+  expect(screen.queryByRole('textbox', { name: '댓글' })).toBeNull();
+  view.rerender(panel(false));
+  expect(screen.getByRole('textbox', { name: '댓글' }).textContent).toBe('Keep this unsent comment');
+});
+
 const codeBody = (text: string) => ({ type: 'doc', content: [{ type: 'codeBlock', attrs: { language: 'typescript' }, content: [{ type: 'text', text }] }] });
 function historyView(text: string, previous = 'const previous = 1;') {
   return <DocmostPaneProvider><AttachmentContext.Provider value={{ api, noteId: 'history-note', editable: false }}>

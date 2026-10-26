@@ -1,6 +1,8 @@
 .fixedToolbar {
-  position: sticky;
-  top: 0;
+  position: fixed;
+  top: calc(var(--app-shell-header-offset, 0rem) + 45px);
+  inset-inline-start: var(--app-shell-navbar-offset, 0rem);
+  inset-inline-end: var(--app-shell-aside-offset, 0rem);
   z-index: 99;
   display: flex;
   align-items: center;

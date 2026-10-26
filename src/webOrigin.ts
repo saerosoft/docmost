@@ -1,8 +1,10 @@
 /**
- * The product web application issues the session cookie for the host name it was opened on, and a browser sends that
- * cookie only to the same host name. Links back to it therefore keep this page's host name and change only the port.
+ * The library navigates within its embedding application. Only the standalone
+ * development harness may use a configured product origin or another local port.
  */
-export function webUrl(path: string, location: Pick<Location, 'protocol' | 'hostname'> = window.location) {
+export function webUrl(path: string, location?: Pick<Location, 'protocol' | 'hostname'>) {
+  if (!import.meta.env.DEV) return path;
   if (import.meta.env.VITE_WEB_ORIGIN) return new URL(path, import.meta.env.VITE_WEB_ORIGIN).href;
-  return `${location.protocol}//${location.hostname}:${import.meta.env.VITE_WEB_PORT}${path}`;
+  const current = location ?? window.location;
+  return `${current.protocol}//${current.hostname}:${import.meta.env.VITE_WEB_PORT}${path}`;
 }

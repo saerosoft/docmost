@@ -55,15 +55,17 @@ export default function DrawioView(props: NodeViewProps) {
   }, [opened, origin, stored.editable, apply, handleClose]);
 
   return <NodeViewWrapper ref={stored.container} data-drag-handle contentEditable={false}>
-    <Modal.Root opened={opened} onClose={handleClose} fullScreen closeOnEscape={!stored.busy}>
+    <Modal.Root opened={opened} onClose={handleClose} fullScreen closeOnEscape={!stored.busy} withinPortal={false} classNames={{ content: "drawio-dialog", inner: "drawio-dialog-viewport" }}>
       <Modal.Overlay/><Modal.Content><Modal.Header><Modal.Title>Draw.io</Modal.Title><Modal.CloseButton aria-label="Draw.io 닫기" disabled={stored.busy}/></Modal.Header>
-        <Modal.Body pos="relative"><LoadingOverlay visible={stored.busy}/>
+        <Modal.Body pos="relative" className="drawio-workspace"><LoadingOverlay visible={stored.busy}/>
           {origin ? <><Text size="xs">이 편집기를 열면 다이어그램 원문이 승인된 {origin} 주소로 전달됩니다.</Text>
             <iframe ref={frame} title="Draw.io editor" src={`${origin}/?embed=1&proto=json&spin=1&libraries=1&stealth=1&pwa=0&plugins=0&drafts=0&chrome=${stored.editable ? '1' : '0'}&ui=${computedColorScheme === "light" ? "kennedy" : "dark"}`}
-              sandbox="allow-scripts allow-same-origin allow-downloads" style={{ width: "100%", height: "70vh", border: 0 }}/></>
+              sandbox="allow-scripts allow-same-origin allow-downloads" className="drawio-canvas"/></>
             : <Text>Draw.io 편집기 주소가 설정되지 않았습니다. XML 원문을 편집할 수 있습니다.</Text>}
-          <Textarea label="Draw.io XML" value={initialXML} readOnly={!!origin || !stored.editable || stored.busy} autosize minRows={8}
-            onChange={event => { xml.current = event.currentTarget.value; setInitialXML(xml.current); setDirty(true); }}/>
+          <details className="drawio-source" open={!origin || undefined}><summary>XML 원본 보기</summary>
+            <Textarea label="Draw.io XML" value={initialXML} readOnly={!!origin || !stored.editable || stored.busy} autosize minRows={8} maxRows={12}
+              onChange={event => { xml.current = event.currentTarget.value; setInitialXML(xml.current); setDirty(true); }}/>
+          </details>
           {(stored.error || messageError) && <Text role="alert" c="red">{stored.error || messageError}</Text>}
           <Group justify="flex-end" mt="sm"><Button onClick={() => void apply(xml.current)} loading={stored.busy} disabled={!stored.editable}>첨부 개정 저장 후 노트에 적용</Button></Group>
         </Modal.Body>

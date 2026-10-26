@@ -7,6 +7,14 @@ import { describe, expect, it } from 'vitest';
 const root = fileURLToPath(new URL('../../', import.meta.url));
 const upstream = 'apps/client/src/';
 const required = [
+  ['application shell', 'components/layouts/global/global-app-shell.tsx'],
+  ['application header', 'components/layouts/global/app-header.tsx'],
+  ['space navigation', 'features/space/components/sidebar/space-sidebar.tsx'],
+  ['space switcher', 'features/space/components/sidebar/switch-space.tsx'],
+  ['search control', 'features/search/components/search-control.tsx'],
+  ['native theme', 'theme.ts'],
+  ['native shell styling', 'components/layouts/global/app-shell.module.css'],
+  ['native accessibility styles', 'styles/a11y-overrides.css'],
   ['page renderer', 'pages/page/page.tsx'],
   ['page layout', 'features/editor/full-editor.tsx'],
   ['title', 'features/editor/title-editor.tsx'],

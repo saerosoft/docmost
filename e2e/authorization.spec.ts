@@ -11,7 +11,7 @@ test('isolates owner-private, administrator and shared notes across three real s
   const outsider = await account(browser, 'outsider');
   try {
     const page = await peer.newPage();
-    await page.goto(`/?space=${fixture!.space}&note=${fixture!.sharedNote}`);
+    await page.goto(`./?space=${fixture!.space}&note=${fixture!.sharedNote}`);
     await expect(page.getByRole('textbox', { name: '노트 본문', exact: true })).toContainText('Human-authored agreement.');
     await expect(page.getByRole('treeitem', { name: 'Acceptance owner private note', exact: true })).toHaveCount(0);
     await expect(page.getByRole('treeitem', { name: 'Acceptance administrator note', exact: true })).toHaveCount(0);
@@ -44,7 +44,7 @@ test('removes an open administrator editor and dirty draft after real role demot
   try {
     await role(owner.request, fixture!.peer, 'OWNER');
     const page = await peer.newPage();
-    await page.goto(`/?space=${fixture!.space}&note=${fixture!.administratorNote}`);
+    await page.goto(`./?space=${fixture!.space}&note=${fixture!.administratorNote}`);
     const body = page.getByRole('textbox', { name: '노트 본문', exact: true });
     await expect(body).toHaveText('Administrator-only evidence.');
     await body.fill('Unsaved administrator secret.');
@@ -65,7 +65,7 @@ test('clears both panes and cached private content when current space membership
   const peer = await account(browser, 'peer');
   try {
     const page = await peer.newPage();
-    await page.goto(`/?space=${fixture!.space}&note=${fixture!.sharedNote}&right=${fixture!.peerPrivateNote}`);
+    await page.goto(`./?space=${fixture!.space}&note=${fixture!.sharedNote}&right=${fixture!.peerPrivateNote}`);
     const left = page.getByRole('region', { name: '왼쪽 편집 창', exact: true });
     const right = page.getByRole('region', { name: '오른쪽 편집 창', exact: true });
     await expect(left.getByRole('textbox', { name: '노트 본문', exact: true })).toContainText('Human-authored agreement.');
@@ -88,7 +88,7 @@ test('keeps readable drafts while disabling writes after demotion to viewer', as
   const peer = await account(browser, 'peer');
   try {
     const page = await peer.newPage();
-    await page.goto(`/?space=${fixture!.space}&note=${fixture!.sharedNote}`);
+    await page.goto(`./?space=${fixture!.space}&note=${fixture!.sharedNote}`);
     const body = page.getByRole('textbox', { name: '노트 본문', exact: true });
     await body.fill('Readable but no longer writable draft.');
     await role(owner.request, fixture!.peer, 'VIEWER');

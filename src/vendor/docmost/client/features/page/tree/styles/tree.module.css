@@ -3,9 +3,11 @@
 }
 
 .treeContainer {
-    height: 24rem;
-    max-height: 45vh;
+    height: 100%;
     min-width: 0;
+    /* DocTree renders a vanilla <ul role="tree"> with no internal virtualizer,
+       so the container must own the scroll. Without this the tree grows past
+       its parent and the page scrolls instead. */
     overflow-y: auto;
     overflow-x: hidden;
 }

@@ -19,7 +19,7 @@ test('keeps human formatting and diagrams separate from current facts and histor
   const owner = await account(browser, 'owner');
   try {
     const page = await owner.newPage();
-    await page.goto(`/?space=${fixture!.space}&note=${current!.noteId}`);
+    await page.goto(`./?space=${fixture!.space}&note=${current!.noteId}`);
     await expect(page.getByRole('heading', { name: '사람이 작성한 본문', exact: true })).toBeVisible();
     const body = page.getByRole('textbox', { name: '노트 본문', exact: true });
     await expect(body.locator('strong')).toHaveText('Human wording must stay. ');
@@ -59,7 +59,7 @@ test('opens a collected note with an empty human editor and a separate confirmed
   const owner = await account(browser, 'owner');
   try {
     const page = await owner.newPage();
-    await page.goto(`/?space=${fixture!.space}&note=${current!.createdNoteId}`);
+    await page.goto(`./?space=${fixture!.space}&note=${current!.createdNoteId}`);
     await expect(page.getByRole('heading', { name: '사람이 작성한 본문', exact: true })).toBeVisible();
     await expect(page.getByRole('textbox', { name: '노트 본문', exact: true })).toHaveText('');
     const summary = page.getByRole('region', { name: '현재 정리', exact: true });
@@ -75,7 +75,7 @@ test('restores a human revision while retaining its independent current knowledg
   try {
     const before = await graphql<State>(owner.request, query, { id: current!.noteId });
     const page = await owner.newPage();
-    await page.goto(`/?space=${fixture!.space}&note=${current!.noteId}`);
+    await page.goto(`./?space=${fixture!.space}&note=${current!.noteId}`);
     await expect(page.getByRole('region', { name: '현재 정리', exact: true }).locator('.current-knowledge-item')).toHaveCount(4);
     await page.getByRole('tab', { name: '이력', exact: true }).click();
     page.once('dialog', dialog => void dialog.accept());
@@ -95,7 +95,7 @@ test('replaces bounded current pages without merging or dropping accepted items'
   const owner = await account(browser, 'owner');
   try {
     const page = await owner.newPage();
-    await page.goto(`/?space=${fixture!.space}&note=${current!.pagedNoteId}`);
+    await page.goto(`./?space=${fixture!.space}&note=${current!.pagedNoteId}`);
     const summary = page.getByRole('region', { name: '현재 정리', exact: true });
     const rows = summary.locator('.current-knowledge-item > p');
     await expect(rows).toHaveCount(20);
@@ -116,7 +116,7 @@ test('shows an actual pinned rule on new current knowledge while preserving its 
   try {
     const page = await owner.newPage();
     const rule = current!.rule;
-    await page.goto(`/?space=${fixture!.space}&note=${rule.noteId}`);
+    await page.goto(`./?space=${fixture!.space}&note=${rule.noteId}`);
     await expect(page.getByRole('heading', { name: '기존 본문', exact: true })).toBeVisible();
     const summary = page.getByRole('region', { name: '현재 정리', exact: true });
     await expect(summary).toContainText('The active rule version supports this newly accepted current fact.');
@@ -143,7 +143,7 @@ test('enforces current-item privacy and removes open administrator evidence afte
     expect(denied.errors?.length).toBeGreaterThan(0); expect(denied.data).toBeNull();
     await role(owner.request, fixture!.peer, 'OWNER');
     const page = await peer.newPage();
-    await page.goto(`/?space=${fixture!.space}&note=${current!.administratorNoteId}`);
+    await page.goto(`./?space=${fixture!.space}&note=${current!.administratorNoteId}`);
     const summary = page.getByRole('region', { name: '현재 정리', exact: true });
     await expect(summary.locator('.current-knowledge-item')).toHaveCount(1);
     await summary.locator('summary').click();

@@ -2,6 +2,13 @@
   "name": "@knowledge-engine/note-gui",
   "version": "0.6.0",
   "private": true,
+  "module": "./dist/note-gui.js",
+  "types": "./dist/types/index.d.ts",
+  "exports": {
+    ".": { "types": "./dist/types/index.d.ts", "import": "./dist/note-gui.js" },
+    "./style.css": "./dist/note-gui.css"
+  },
+  "files": ["dist", "LICENSE", "NOTICE"],
   "type": "module",
   "license": "AGPL-3.0-only",
   "packageManager": "pnpm@10.29.2",
@@ -10,7 +17,7 @@
   },
   "scripts": {
     "dev": "vite --host 127.0.0.1 --port 9090",
-    "build": "node scripts/source-offer.mjs && tsc --noEmit && vite build && node scripts/verify-distribution.mjs",
+    "build": "node scripts/source-offer.mjs && tsc --noEmit && tsc --project tsconfig.library.json && vite build --config vite.library.config.ts && node scripts/library-types.mjs && node scripts/verify-distribution.mjs",
     "test": "vitest run",
     "test:browser": "playwright test",
     "source": "node scripts/source-offer.mjs",

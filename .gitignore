@@ -4,6 +4,7 @@ public/source/
 .tmp/
 .vite/
 coverage/
+.serena/
 .env
 .env.*
 *.log

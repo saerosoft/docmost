@@ -1,12 +1,15 @@
 <!doctype html>
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Note GUI source</title><style>body{max-width:760px;margin:60px auto;padding:0 24px;font:16px/1.7 system-ui;color:#263b3a}a{color:#087f6a}pre{white-space:pre-wrap}</style></head><body>
 <h1>Knowledge Engine note GUI source</h1>
-<p>This modified Docmost-derived client is distributed under GNU AGPL version 3. The archive contains the complete client source, modifications, build instructions, notices and dependency manifest, lockfile and local SDK patch.</p>
-<p><a href="./source/note-gui-source.zip" download>Download complete client source</a> · <a href="./source/LICENSE">License</a> · <a href="./source/NOTICE">Notices</a> · <a href="./source/upstream-manifest.json">Source provenance and changes</a></p>
+<p>This modified Docmost-derived browser library is distributed under GNU AGPL version 3. The archive contains the complete library source, modifications, build instructions, notices and dependency manifest, lockfile and local SDK patch. The original/adapted GUI and CSS are built for a consuming product host; Vite is an optional development and demo harness.</p>
+<p><a href="./source/note-gui-source.zip" download>Download complete library source</a> · <a href="./source/LICENSE">License</a> · <a href="./source/NOTICE">Notices</a> · <a href="./source/upstream-manifest.json">Source provenance and changes</a></p>
 <p>Upstream: Docmost v0.96.0, commit <code>9b3e5dd3dc21588fa20c02c5b8646d2f46ee73af</code>. The extracted page, editor, tree, comments, history, diagram UI and modifications are listed in the provenance manifest. No Enterprise modules are included.</p>
+<h2>Library and host integration</h2>
+<p>The built ES module is <code>dist/note-gui.js</code>, with declarations under <code>dist/types/</code>; the separate stylesheet is <code>dist/note-gui.css</code>. A browser host loads the CSS and imports the module, calls <code>mountNoteGui</code> with its container, and calls the returned <code>unmount</code> during cleanup. Serve the complete distribution, including generated chunks, local fonts and this source offer. The package is private and consumed from its pinned public repository; no npm publication is claimed.</p>
 <h2>Build</h2><pre>pnpm install --frozen-lockfile
 pnpm test
 pnpm source
 pnpm build</pre>
-<p>Use Node compatible with Vite 8 and Python 3.12+. See README.md in the archive for local API routing, configuration and redistribution requirements. Third-party packages retain their own licenses. This source offer makes no claim that connected applications are legally independent.</p>
+<p>Use Node.js 26, pnpm 10.29.2 and Python 3.12 or later. See README.md in the archive for library exports, CSS loading, host cleanup, API routing and source-distribution requirements. Third-party packages retain their own licenses.</p>
+<p>This offer identifies the public library source. It does not declare that a library-only archive satisfies the consuming product's source obligations. Separate packaging, an isolated React root, browser chunks or processes are not asserted to exempt the host; the actual integration and distribution must be assessed. No conclusion about the consuming product's legal independence is made.</p>
 </body></html>

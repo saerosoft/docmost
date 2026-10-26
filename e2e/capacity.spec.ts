@@ -23,7 +23,7 @@ test('bounds tree transfers, rendered rows and retained heap while navigating a 
       }
     });
     try {
-      await page.goto(`/?space=${fixture!.corpus}`);
+      await page.goto(`./?space=${fixture!.corpus}`);
       await expect(rows.first()).toBeVisible();
       const firstId = await rows.first().getAttribute('data-row-id');
       await session.send('HeapProfiler.collectGarbage');
@@ -67,7 +67,7 @@ test('restores a child location and saves structured content inside the million-
   try {
     const page = await context.newPage();
     const id = scale!.probeIds['100001'];
-    await page.goto(`/?space=${fixture!.corpus}&note=${id}`);
+    await page.goto(`./?space=${fixture!.corpus}&note=${id}`);
     const body = page.getByRole('textbox', { name: '노트 본문', exact: true });
     await expect(body).toContainText('Capacity fixture 100001:');
     await expect(page.getByRole('treeitem', { name: 'Scale note 0100001', exact: true })).toBeVisible();

@@ -29,6 +29,13 @@ async function open(page: Page, label: string) {
   await page.getByRole('button', { name: '다이어그램 편집', exact: true }).click();
   const frame = page.frameLocator('iframe[title="Draw.io editor"]');
   await expect(frame.getByText(label, { exact: true })).toBeVisible();
+  const geometry = await page.getByRole('dialog').evaluate(element => {
+    const { width, left, right } = element.getBoundingClientRect();
+    return { width, left, right, viewportWidth: window.innerWidth };
+  });
+  expect(geometry.width).toBeGreaterThan(geometry.viewportWidth * .9);
+  expect(geometry.left).toBeGreaterThanOrEqual(0);
+  expect(geometry.right).toBeLessThanOrEqual(geometry.viewportWidth + 1);
   await expect(page.getByLabel('Draw.io XML', { exact: true })).toHaveJSProperty('readOnly', true);
   return frame;
 }
@@ -39,8 +46,9 @@ test('edits graphical Draw.io text twice and preserves immutable attachment byte
   try {
     const page = await owner.newPage();
     const external = new Set<string>();
-    page.on('request', request => { const url = new URL(request.url()); if (url.protocol.startsWith('http') && !['localhost', '127.0.0.1'].includes(url.hostname)) external.add(url.origin); });
-    await page.goto(`/?space=${fixture!.space}&note=${created.id}`);
+    const approvedOrigins = new Set([new URL(process.env.NOTE_GUI_E2E_BASE_URL || 'http://localhost:9090').origin, new URL(origin!).origin]);
+    page.on('request', request => { const url = new URL(request.url()); if (url.protocol.startsWith('http') && !approvedOrigins.has(url.origin)) external.add(url.origin); });
+    await page.goto(`./?space=${fixture!.space}&note=${created.id}`);
     for (const [before, after] of [['Original graphical shape', 'First graphical edit'], ['First graphical edit', 'Reopened graphical edit']]) {
       const frame = await open(page, before);
       const source = page.getByLabel('Draw.io XML', { exact: true });
@@ -104,7 +112,7 @@ test('removes an open graphical attachment after administrator access is revoked
   try {
     await role(owner.request, fixture!.peer, 'OWNER');
     const page = await peer.newPage();
-    await page.goto(`/?space=${fixture!.space}&note=${created.id}`);
+    await page.goto(`./?space=${fixture!.space}&note=${created.id}`);
     const frame = await open(page, 'Original graphical shape');
     await frame.getByText('Original graphical shape', { exact: true }).dblclick();
     await frame.locator('.mxCellEditor[contenteditable="true"]').fill('Unsaved restricted diagram');
@@ -124,7 +132,7 @@ test('shows a shared diagram to a viewer without graphical editing or file write
   try {
     await role(owner.request, fixture!.peer, 'VIEWER');
     const page = await peer.newPage();
-    await page.goto(`/?space=${fixture!.space}&note=${created.id}`);
+    await page.goto(`./?space=${fixture!.space}&note=${created.id}`);
     const frame = await open(page, 'Original graphical shape');
     await frame.getByText('Original graphical shape', { exact: true }).dblclick();
     await expect(frame.locator('.mxCellEditor[contenteditable="true"]')).toHaveCount(0);

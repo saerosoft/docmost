@@ -1,0 +1,13 @@
+.main { height: 100dvh; min-height: 0; display: flex; flex-direction: column; overflow: hidden; }
+.navbar { overflow: hidden; }
+.mobileBackdrop { display: none; }
+.paneTarget { padding-bottom: var(--mantine-spacing-sm); }
+.sectionPages { min-height: 0; flex: 1; display: flex; flex-direction: column; }
+.pages { min-height: 0; flex: 1; overflow: auto; }
+@media (max-width: 48em) {
+  .navbar { width: min(320px, calc(100vw - 48px)); }
+  .header { padding-left: 0; padding-right: 0; }
+  .header button, .header a { min-height: 44px; min-width: 44px; }
+  .mobileBackdrop { display: block; position: fixed; inset: 45px 0 0 min(320px, calc(100vw - 48px)); z-index: 99; }
+  .resizeHandle { display: none; }
+}

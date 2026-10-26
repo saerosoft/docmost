@@ -1,0 +1,8 @@
+.navigation { display: flex; flex-direction: column; height: 100%; min-height: 20rem; min-width: 0; gap: 8px; }
+.navigation form { display: grid; gap: 8px; }
+.navigation > :not(.treeContainer) { flex-shrink: 0; }
+.treeContainer { flex: 1; min-height: 12rem; }
+.treeRow { display: flex; align-items: center; width: 100%; min-width: 0; height: 36px; gap: 4px; }
+.selection { flex-shrink: 0; }
+.pagination { display: inline-flex; flex-shrink: 0; margin-left: 2px; }
+@media (max-width: 48em) { .treeRow { height: 44px; } }

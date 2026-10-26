@@ -2,6 +2,7 @@ import { createHash, randomBytes } from 'node:crypto';
 import { mkdirSync, readFileSync, unlinkSync, writeFileSync } from 'node:fs';
 import { expect, test } from '@playwright/test';
 import { account, fixture, graphql } from './realApi';
+import { noteWorkspace, openToolbar } from './nativeControls';
 
 test.skip(!fixture, 'Requires isolated real API accounts and storage.');
 
@@ -18,7 +19,7 @@ test('saves a long structured document and a 20 MiB attachment without truncatio
     await graphql(owner.request, 'mutation($id:UUID!,$input:SaveRichNoteInput!){saveRichNote(id:$id,input:$input){id}}', { id: note.id, input: { title: note.title, expectedRevision: 1, richBody, schemaVersion: 1, idempotencyKey: crypto.randomUUID() } });
     const page = await owner.newPage();
     const start = performance.now();
-    await page.goto(`/?space=${fixture!.space}&note=${note.id}`);
+    await page.goto(`./?space=${fixture!.space}&note=${note.id}`);
     const body = page.getByRole('textbox', { name: '노트 본문', exact: true });
     await expect(body.locator('p')).toHaveCount(1000);
     await expect(body.locator('p').last()).toHaveText(paragraphs.at(-1)!);
@@ -26,6 +27,7 @@ test('saves a long structured document and a 20 MiB attachment without truncatio
     await body.press('Control+End'); await body.press('Enter'); await body.pressSequentially('Browser large-document edit.');
     const payload = randomBytes(20 * 1024 * 1024);
     const checksum = createHash('sha256').update(payload).digest('hex');
+    await openToolbar(page);
     const uploadStart = performance.now();
     const uploaded = page.waitForResponse(response => response.url().endsWith('/api/files') && response.request().method() === 'POST');
     await page.locator('input[type="file"]').setInputFiles({ name: 'large-acceptance.bin', mimeType: 'application/octet-stream', buffer: payload });
@@ -53,7 +55,7 @@ test('saves a long structured document and a 20 MiB attachment without truncatio
     const beforeInvalid = saved.richBody;
     await body.fill('x'.repeat(110_000));
     await page.getByRole('button', { name: '저장', exact: true }).click();
-    await expect(page.getByRole('alert')).toBeVisible();
+    await expect(noteWorkspace(page).getByRole('alert')).toBeVisible();
     await expect(body).toHaveText('x'.repeat(110_000));
     expect((await graphql<Stored>(owner.request, query, { id: note.id })).knowledgeNote.richBody).toBe(beforeInvalid);
     writeFileSync('.tmp/acceptance/large-document.json', JSON.stringify({ paragraphs: paragraphs.length, textCharacters: paragraphs.join('\n').length, structuredBytes: Buffer.byteLength(richBody), attachmentBytes: payload.length, attachmentSha256: checksum, openMs, uploadMs, oversizedDraftCharacters: 110_000, storedBodyPreservedAfterRejection: true }, null, 2));

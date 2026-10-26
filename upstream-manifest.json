@@ -43,9 +43,7 @@
       "source": "apps/client/src/features/editor/components/fixed-toolbar/fixed-toolbar.module.css",
       "destination": "src/vendor/docmost/client/features/editor/components/fixed-toolbar/fixed-toolbar.module.css",
       "upstreamSha256": "ad67f92895568b733d3bc0d3c53446e61d4a45fbc8f0d91207a9be1ec1679ae1",
-      "changes": [
-        "Changes the fixed viewport toolbar to a sticky pane toolbar."
-      ]
+      "changes": []
     },
     {
       "source": "apps/client/src/features/editor/components/fixed-toolbar/use-toolbar-state.ts",
@@ -101,9 +99,7 @@
       "source": "apps/client/src/features/editor/styles/editor.module.css",
       "destination": "src/vendor/docmost/client/features/editor/styles/editor.module.css",
       "upstreamSha256": "de800f0df379f19efe5aa2291d09fc40c8c0dfefdef42c5c080a8d5fe5e1d4b7",
-      "changes": [
-        "Scopes editor spacing and layout to the independently mounted pane; removes viewport-height blank space so note panels follow the document."
-      ]
+      "changes": []
     },
     {
       "source": "apps/client/src/features/editor/styles/core.css",
@@ -140,7 +136,8 @@
       "destination": "src/vendor/docmost/client/features/editor/full-editor.tsx",
       "upstreamSha256": "24ff933e2addadc7eb404d4831ce988a8e19a6da77f0b76ceb0522086b34a46a",
       "changes": [
-        "Keeps the core title/body/toolbar composition with explicit authorized pane inputs and attachment context; removes global page queries, preferences and Enterprise controls."
+        "Keeps the core title/body/toolbar composition with explicit authorized pane inputs and attachment context; removes global page queries, preferences and Enterprise controls.",
+        "Adds a pane-controlled fixed-toolbar toggle, hidden by default, and an optional byline between the retained title and body editors."
       ]
     },
     {
@@ -224,9 +221,7 @@
       "source": "apps/client/src/features/editor/styles/index.css",
       "destination": "src/vendor/docmost/client/features/editor/styles/index.css",
       "upstreamSha256": "ac73d63b59ac450eaf036bb8512a4b937613b656b679dc7ec1541b7c96cf0644",
-      "changes": [
-        "Includes only the retained canonical editor style closure."
-      ]
+      "changes": []
     },
     {
       "source": "apps/client/src/features/page/tree/components/doc-tree.tsx",
@@ -286,9 +281,7 @@
       "source": "apps/client/src/features/page/tree/styles/tree.module.css",
       "destination": "src/vendor/docmost/client/features/page/tree/styles/tree.module.css",
       "upstreamSha256": "20701b9c37e6c805628cefeb0e355559ba73762de6ce82cd14bb3624582b32b6",
-      "changes": [
-        "Removes upstream shell indentation while retaining core row, focus and drop presentation."
-      ]
+      "changes": []
     },
     {
       "source": "apps/client/src/features/comment/components/comment-list-with-tabs.tsx",
@@ -426,7 +419,8 @@
       "upstreamSha256": "2d1ff294df3dbc9c42a2618bedc064c3b2616cbf1dd9837465edb5b1a4e7a833",
       "changes": [
         "Keeps the core node card and edit modal with authorized immutable XML attachments. Uses explicit HTTPS origin/window message validation, an XML editor when unconfigured, dirty-state protection and late-write guards.",
-        "Portals the diagram dialog to the document body so its controls remain inside the viewport in either editing pane, and labels its close control."
+        "Uses a non-portaled full-screen diagram dialog within the pane subtree and labels its close control. The approved embed occupies the native canvas; XML is available in a disclosure and remains read-only while the embed is active, with direct XML editing retained when no embed is configured.",
+        "Separates Modal content and viewport classNames so full-screen sizing keeps the native horizontal flex layout and anchors a non-portaled dialog at the viewport origin."
       ]
     },
     {
@@ -573,7 +567,8 @@
       "destination": "src/vendor/docmost/client/pages/page/page.tsx",
       "upstreamSha256": "8acae7e7c8fbabe351579abc52d4edb1205272cf3dae97aa468dc68599d058dd",
       "changes": [
-        "Keeps the core page renderer, error boundary and header/editor composition with explicit authorized pane props; removes upstream page queries, global routes, public sharing and Enterprise controls."
+        "Keeps the core page renderer, error boundary and header/editor composition with explicit authorized pane props; removes upstream page queries, global routes, public sharing and Enterprise controls.",
+        "Adds a pane-controlled contextual aside beside the document, combines the retained AppShell aside styling with the local pane layout, and hides the aside without unmounting it when closed."
       ]
     },
     {
@@ -600,9 +595,7 @@
       "source": "apps/client/src/features/page/components/header/page-header.module.css",
       "destination": "src/vendor/docmost/client/features/page/components/header/page-header.module.css",
       "upstreamSha256": "1bd32fcd3850154546b3595b5c7cd9979d3fd85731ee9fd2ad347d15dc3cc64e",
-      "changes": [
-        "Changes the viewport-fixed header to a relative pane header."
-      ]
+      "changes": []
     },
     {
       "source": "apps/client/src/features/editor/components/callout/callout-view.tsx",
@@ -616,6 +609,204 @@
       "source": "apps/client/src/features/editor/components/callout/callout.module.css",
       "destination": "src/vendor/docmost/client/features/editor/components/callout/callout.module.css",
       "upstreamSha256": "9ce0103e08047433983cb84878ce1fc1382bf1b7d9f986cd8e3d2dad91aa094a",
+      "changes": []
+    },
+    {
+      "source": "apps/client/src/theme.ts",
+      "destination": "src/vendor/docmost/client/theme.ts",
+      "upstreamSha256": "fbe2ce943b82991ee9c679928c43414fc287299e5a1e3d5d210b6ea4171b53ee",
+      "changes": []
+    },
+    {
+      "source": "apps/client/src/styles/a11y-overrides.css",
+      "destination": "src/vendor/docmost/client/styles/a11y-overrides.css",
+      "upstreamSha256": "2daaec2bc2eb709f677dc170168d09e8c1fd2fa5af950315dc633c4bbeb6d2b9",
+      "changes": []
+    },
+    {
+      "source": "apps/client/src/components/ui/sidebar-toggle-button.tsx",
+      "destination": "src/vendor/docmost/client/components/ui/sidebar-toggle-button.tsx",
+      "upstreamSha256": "a2e1fafad84a514ca28720fa25055bd0d313ef1da03058840f0bc0359ca186f8",
+      "changes": []
+    },
+    {
+      "source": "apps/client/src/components/layouts/global/app-shell.module.css",
+      "destination": "src/vendor/docmost/client/components/layouts/global/app-shell.module.css",
+      "upstreamSha256": "82c28068bacee41d85fb14d9b0e378a432082e3fc5f0c313fe5365052c3c9a1c",
+      "changes": []
+    },
+    {
+      "source": "apps/client/src/components/layouts/global/app-header.module.css",
+      "destination": "src/vendor/docmost/client/components/layouts/global/app-header.module.css",
+      "upstreamSha256": "57f39141f60a426f7e7ef8c1b1cc8ee7cc7df91c7ba63cc6b0c170f90fca68bc",
+      "changes": []
+    },
+    {
+      "source": "apps/client/src/features/search/components/search-control.module.css",
+      "destination": "src/vendor/docmost/client/features/search/components/search-control.module.css",
+      "upstreamSha256": "943448928ac65541bf94da4844ba95abda5f89efd9b5a2c465b216f660f67918",
+      "changes": []
+    },
+    {
+      "source": "apps/client/src/features/space/components/sidebar/space-sidebar.module.css",
+      "destination": "src/vendor/docmost/client/features/space/components/sidebar/space-sidebar.module.css",
+      "upstreamSha256": "bc75a332b807841bb105e449793ee019cfbafa384f0cb5d24314ac51b244fbd9",
+      "changes": []
+    },
+    {
+      "source": "apps/client/src/features/space/components/sidebar/switch-space.module.css",
+      "destination": "src/vendor/docmost/client/features/space/components/sidebar/switch-space.module.css",
+      "upstreamSha256": "4e95aa6410351b9aeae3dde721d90d2bdf4a59a624da2261701d1d63b38bc95b",
+      "changes": []
+    },
+    {
+      "source": "apps/client/src/components/layouts/global/global-app-shell.tsx",
+      "destination": "src/vendor/docmost/client/components/layouts/global/global-app-shell.tsx",
+      "upstreamSha256": "3896ff5f23e7aece5eb495b33923f234482ab2a15f84bdbfeb40b9832b53d87f",
+      "changes": [
+        "Restores the native core shell/navigation/control composition and styling with explicit authorized product adapter props; excludes upstream routes, account services, storage and Enterprise imports. Retains pane-local editing and product permission ownership."
+      ]
+    },
+    {
+      "source": "apps/client/src/components/layouts/global/app-header.tsx",
+      "destination": "src/vendor/docmost/client/components/layouts/global/app-header.tsx",
+      "upstreamSha256": "759245d7fd231c48fedc3dc9afd9d187567b05a4dbe7f43738e54092d8398e5d",
+      "changes": [
+        "Restores the native core shell/navigation/control composition and styling with explicit authorized product adapter props; excludes upstream routes, account services, storage and Enterprise imports. Retains pane-local editing and product permission ownership."
+      ]
+    },
+    {
+      "source": "apps/client/src/features/search/components/search-control.tsx",
+      "destination": "src/vendor/docmost/client/features/search/components/search-control.tsx",
+      "upstreamSha256": "fd95c76597d4abde94798bf685deed9327e2525c7e8ecca8d2778622e3989154",
+      "changes": [
+        "Restores the native core shell/navigation/control composition and styling with explicit authorized product adapter props; excludes upstream routes, account services, storage and Enterprise imports. Retains pane-local editing and product permission ownership."
+      ]
+    },
+    {
+      "source": "apps/client/src/features/space/components/sidebar/switch-space.tsx",
+      "destination": "src/vendor/docmost/client/features/space/components/sidebar/switch-space.tsx",
+      "upstreamSha256": "7dbf8db56e6cb4b0727cacd462ed650a6e5b3d74152dc32672f9d1e8a16d2d22",
+      "changes": [
+        "Restores the native core shell/navigation/control composition and styling with explicit authorized product adapter props; excludes upstream routes, account services, storage and Enterprise imports. Retains pane-local editing and product permission ownership."
+      ]
+    },
+    {
+      "source": "apps/client/src/features/space/components/sidebar/space-sidebar.tsx",
+      "destination": "src/vendor/docmost/client/features/space/components/sidebar/space-sidebar.tsx",
+      "upstreamSha256": "04189607e23cd9edfbe98b498232da86180393ab6604c1a8c9ea4c322d6c754c",
+      "changes": [
+        "Restores the native core shell/navigation/control composition and styling with explicit authorized product adapter props; excludes upstream routes, account services, storage and Enterprise imports. Retains pane-local editing and product permission ownership."
+      ]
+    },
+    {
+      "source": "apps/client/src/features/editor/styles/collaboration.css",
+      "destination": "src/vendor/docmost/client/features/editor/styles/collaboration.css",
+      "upstreamSha256": "6f1aa9c79da7c1315981d79560a8413a7aadcaee2e68548206f0f5196e9767da",
+      "changes": []
+    },
+    {
+      "source": "apps/client/src/features/editor/styles/drag-handle.css",
+      "destination": "src/vendor/docmost/client/features/editor/styles/drag-handle.css",
+      "upstreamSha256": "607b325150f5d14ead29d464306f9445b2535ea5f90f9d7deb4a241c562055b4",
+      "changes": []
+    },
+    {
+      "source": "apps/client/src/features/editor/styles/details.css",
+      "destination": "src/vendor/docmost/client/features/editor/styles/details.css",
+      "upstreamSha256": "d79f7c2b36b10f900d09655d17c75d979039096f353b0f14006a4098f8f6b0ab",
+      "changes": []
+    },
+    {
+      "source": "apps/client/src/features/editor/styles/youtube.css",
+      "destination": "src/vendor/docmost/client/features/editor/styles/youtube.css",
+      "upstreamSha256": "2a6753ef0748685a3981d5bb1027c637bd81d785692a5738278479b481def153",
+      "changes": []
+    },
+    {
+      "source": "apps/client/src/features/editor/styles/media.css",
+      "destination": "src/vendor/docmost/client/features/editor/styles/media.css",
+      "upstreamSha256": "35700b133c6c3e48481df5adf0b7364633181f28b9b29c40d42e527db74d610d",
+      "changes": []
+    },
+    {
+      "source": "apps/client/src/features/editor/styles/print.css",
+      "destination": "src/vendor/docmost/client/features/editor/styles/print.css",
+      "upstreamSha256": "a27ea23230fb97d2e433a84663b7323d68523cb093de75d615df9b13e4de8861",
+      "changes": []
+    },
+    {
+      "source": "apps/client/src/features/editor/styles/find.css",
+      "destination": "src/vendor/docmost/client/features/editor/styles/find.css",
+      "upstreamSha256": "e34be6c5b3a34194f0193eb54a3cc0bd095a63665faf192e0c8f7f2c30cd4494",
+      "changes": []
+    },
+    {
+      "source": "apps/client/src/features/editor/styles/mention.css",
+      "destination": "src/vendor/docmost/client/features/editor/styles/mention.css",
+      "upstreamSha256": "423f08e4424451369df60b83bf2256754647bf369039503acf6608a60bceae95",
+      "changes": []
+    },
+    {
+      "source": "apps/client/src/features/editor/styles/ordered-list.css",
+      "destination": "src/vendor/docmost/client/features/editor/styles/ordered-list.css",
+      "upstreamSha256": "dff4b9be229e7f4e4b59dd1ffb905bb6498ccc0224166a5b64ded4b439626dce",
+      "changes": []
+    },
+    {
+      "source": "apps/client/src/features/editor/styles/highlight.css",
+      "destination": "src/vendor/docmost/client/features/editor/styles/highlight.css",
+      "upstreamSha256": "a1916979e6475d3a30081cbb94ad37ebc94dcfead3eb4fe19fba722721467440",
+      "changes": []
+    },
+    {
+      "source": "apps/client/src/features/editor/styles/indent.css",
+      "destination": "src/vendor/docmost/client/features/editor/styles/indent.css",
+      "upstreamSha256": "7f386586a6aee35fc8c87448a31a6c57bb1a8942fc539b2959343840fd542d7b",
+      "changes": []
+    },
+    {
+      "source": "apps/client/src/features/editor/styles/columns.css",
+      "destination": "src/vendor/docmost/client/features/editor/styles/columns.css",
+      "upstreamSha256": "8f0a0193e12e2994e3b554878d1afc83b87993cca9912e06d5ef3bb57f00c18c",
+      "changes": []
+    },
+    {
+      "source": "apps/client/src/features/editor/styles/status.css",
+      "destination": "src/vendor/docmost/client/features/editor/styles/status.css",
+      "upstreamSha256": "d11c3ca4dc81f6d136bef748920b30ca45139a0c5c737a46a77ba27e0dc3abc6",
+      "changes": []
+    },
+    {
+      "source": "apps/client/src/features/editor/styles/base-embed.css",
+      "destination": "src/vendor/docmost/client/features/editor/styles/base-embed.css",
+      "upstreamSha256": "dc9c274d0cd54934ad4b7469bfcb6e9710f4480ff590bd2374cff4402979f295",
+      "changes": []
+    },
+    {
+      "source": "apps/client/src/features/editor/styles/footnotes.css",
+      "destination": "src/vendor/docmost/client/features/editor/styles/footnotes.css",
+      "upstreamSha256": "91d1aa8760ed69708eddeeab942d2e5e73c66b4bd3ab0479a0d51791d98a981d",
+      "changes": []
+    },
+    {
+      "source": "apps/client/src/components/layouts/global/aside.tsx",
+      "destination": "src/vendor/docmost/client/components/layouts/global/aside.tsx",
+      "upstreamSha256": "5a0ddc24e6ca2d1db87e005421662d77907e9c503885991a183b60996bf6c5a5",
+      "changes": [
+        "Keeps the original aside layout with explicit children and close callback; excludes Enterprise chat, upstream queries and shared application atoms."
+      ]
+    },
+    {
+      "source": "apps/client/src/components/ui/skip-to-main.tsx",
+      "destination": "src/vendor/docmost/client/components/ui/skip-to-main.tsx",
+      "upstreamSha256": "d0e06db443db05bc968c058a594d26389f55cafe09ac7942b78dac206242efaf",
+      "changes": []
+    },
+    {
+      "source": "apps/client/src/components/ui/skip-to-main.module.css",
+      "destination": "src/vendor/docmost/client/components/ui/skip-to-main.module.css",
+      "upstreamSha256": "ad851ccf710a066f84114df3f50bf7fa02bc53fce75059eb9add939b52443361",
       "changes": []
     }
   ],
@@ -631,7 +822,9 @@
     "Connected the KN-02 context to authorized accumulation and comparison APIs, including source visibility and timing, actual applied rule versions, review/action links and bounded history pages. Scoped title, body and comment sizing for the note-only layout and added isolated browser regression tests against the real API.",
     "Made the approved Draw.io embed the single editable source while open, preserving direct XML editing without an embed. Disabled external service features, service-worker setup and plugins through upstream URL parameters. Real graphical save/reopen and live attachment revocation are covered by isolated real-API browser tests.",
     "Use the API's effective space role for note creation, selection, dragging and writable move destinations. Select Draw.io's graphical read-only viewer when the note cannot be edited. Actual account demotion and direct denied writes are verified against the real API.",
-    "Separate KN-02's authored document, authoritative current knowledge and accumulation history. Preserve legacy mixed-body classification, display explicit claim kinds, expand evidence and actual pinned rules, and replace bounded current pages without deriving membership from history. Real-API cases cover preserved rich content, stale proposals, current-item privacy, legacy restore and paging."
+    "Separate KN-02's authored document, authoritative current knowledge and accumulation history. Preserve legacy mixed-body classification, display explicit claim kinds, expand evidence and actual pinned rules, and replace bounded current pages without deriving membership from history. Real-API cases cover preserved rich content, stale proposals, current-item privacy, legacy restore and paging.",
+    "Restores the pinned public-core AppShell, header, native space navigation, search controls, theme, accessibility styles and complete editor stylesheets. Tabs and split panes surround the retained page UI; bounded expanded tree branches and contextual panels preserve authoring state.",
+    "Exports the GUI as a browser ESM library with mount/unmount lifecycle, typed API adapter and CSS/assets. The consuming Next.js application imports and mounts the library inside WEB; the Vite harness is optional. Package, repository or React-root separation does not establish an AGPL exemption for the consuming application."
   ],
   "integrationSource": {
     "repository": "https://github.com/saerosoft/knowledge-engine",

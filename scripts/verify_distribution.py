@@ -30,11 +30,11 @@ for font in fonts:
     target = dist / 'excalidraw' / 'fonts' / font.relative_to(font_root)
     assert target.read_bytes() == font.read_bytes(), f'Local SDK font differs: {target.name}'
 
-runtime = list((dist / 'assets').glob('*.js'))
+runtime = list(dist.rglob('*.js'))
 assert runtime, 'Runtime JavaScript missing'
 assert not any(b'ASSETS_FALLBACK_URL' in path.read_bytes() or b'https://esm.sh/' in path.read_bytes() for path in runtime), 'SDK font CDN fallback remains in runtime JavaScript'
 map_sources = set()
-for path in (dist / 'assets').glob('*.js.map'):
+for path in dist.rglob('*.js.map'):
     data = json.loads(path.read_text(encoding='utf-8'))
     map_sources.update(item.replace('\\', '/') for item in data.get('sources', []))
 for name in ['pages/page/page.tsx', 'features/editor/full-editor.tsx', 'features/editor/page-editor.tsx', 'features/page/tree/components/doc-tree.tsx', 'features/comment/components/comment-list-with-tabs.tsx', 'features/page-history/components/history-editor.tsx', 'features/editor/components/drawio/drawio-view.tsx', 'features/editor/components/excalidraw/excalidraw-view.tsx', 'features/editor/components/code-block/mermaid-view.tsx']:

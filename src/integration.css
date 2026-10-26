@@ -1,0 +1,32 @@
+.note-gui-panes { display: grid; flex: 1; min-height: 0; min-width: 0; grid-template-columns: minmax(0, 1fr); overflow: hidden; }
+.note-gui-panes[data-split=true] { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
+.note-gui-pane { min-width: 0; min-height: 0; display: flex; flex-direction: column; overflow: hidden; }
+.note-gui-page { display: flex; flex: 1; flex-direction: column; min-height: 0; min-width: 0; overflow: hidden; }
+.note-gui-tabs { flex-shrink: 0; min-width: 0; overflow-x: auto; overflow-y: hidden; }
+.note-gui-tabs [role=tablist] { min-width: max-content; }
+.note-gui-tabs [role=tab] { max-width: 220px; }
+.note-gui-tabs [role=tab] span { overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+.note-page-breadcrumb { flex: 1; min-width: 0; }
+.note-page-breadcrumb > svg, .note-page-actions { flex-shrink: 0; }
+.note-panel-content, .note-detail-panels, .note-knowledge-panels { min-width: 0; overflow-wrap: anywhere; }
+.note-panel-content[hidden], .note-detail-panels[hidden], .note-knowledge-panels[hidden] { display: none; }
+.note-panels [role=tablist] { flex-wrap: wrap; }
+.note-gui-pane .preserve { white-space: pre-wrap; overflow-wrap: anywhere; }
+.note-gui-pane pre { max-width: 100%; overflow: auto; white-space: pre-wrap; overflow-wrap: anywhere; }
+.note-attachments { overflow-wrap: anywhere; }
+.excalidraw-preview img { display: block; max-width: 100%; height: auto; max-height: 480px; }
+/* Non-portaled native dialogs still use the viewport as their horizontal origin. */
+.drawio-dialog-viewport { inset: 0; }
+.drawio-dialog { display: flex; flex-direction: column; height: 100dvh; overflow: hidden; }
+.drawio-dialog > header { flex-shrink: 0; }
+.drawio-workspace { display: flex; flex: 1; flex-direction: column; min-height: 0; overflow: auto; }
+.drawio-canvas { width: 100%; flex: 1; min-height: 300px; border: 0; }
+.drawio-source { flex-shrink: 0; max-height: 40dvh; overflow: auto; }
+@media (max-width: 62em) {
+  .note-gui-panes[data-split=true] { grid-template-columns: minmax(0, 1fr); overflow-y: auto; }
+  .note-gui-panes[data-split=true] .note-gui-pane { min-height: 70dvh; }
+}
+@media (max-width: 48em) {
+  .note-page-breadcrumb > svg { display: none; }
+  .note-gui-tabs [role=tab] { max-width: 160px; }
+}

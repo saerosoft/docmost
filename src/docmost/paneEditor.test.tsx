@@ -30,7 +30,7 @@ afterEach(() => { cleanup(); editors.clear(); vi.unstubAllGlobals(); });
 
 function page(id: string, onChange = vi.fn(), onInvalid = vi.fn(), content: JSONContent = { type: 'doc', content: [{ type: 'paragraph', content: [{ type: 'text', text: 'Original body' }] }] }, editable = true, client: NoteApi = api) {
   return <DocmostPaneProvider><section className="pane" aria-label={id}>
-    <FullEditor api={client} pageId="same-note" title="Original title" content={content} editable={editable} onTitleChange={vi.fn()} onChange={onChange} onInvalid={onInvalid}/>
+    <FullEditor showToolbar api={client} pageId="same-note" title="Original title" content={content} editable={editable} onTitleChange={vi.fn()} onChange={onChange} onInvalid={onInvalid}/>
     <Capture id={id}/>
   </section></DocmostPaneProvider>;
 }

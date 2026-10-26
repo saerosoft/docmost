@@ -14,7 +14,7 @@ import { LinkSelector } from "../bubble-menu/link-selector";
 
 export function FixedToolbar() {
   const editor = useAtomValue(pageEditorAtom);
-  return <div className={classes.fixedToolbar} data-fixed-toolbar="true" role="toolbar" aria-label="Editor toolbar" onMouseDown={event => event.preventDefault()}>
+  return <div className={classes.fixedToolbar} style={{ position: "sticky", top: 0, insetInlineStart: "auto", insetInlineEnd: "auto" }} data-fixed-toolbar="true" role="toolbar" aria-label="Editor toolbar" onMouseDown={event => event.preventDefault()}>
     {editor && <ToolbarContent editor={editor}/>}
   </div>;
 }

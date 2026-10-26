@@ -56,9 +56,11 @@ function server(loseNextResponse = true) {
 async function showTree(spaceId = 'space') {
   const view = render(<MantineProvider env="test"><NoteTree api={api} spaceId={spaceId} activeNoteId={null} onOpen={vi.fn()}/></MantineProvider>);
   await screen.findByText('이 경로에 노트가 없습니다.');
+  fireEvent.click(screen.getByRole('button', { name: '새 페이지' }));
   return view;
 }
 async function createNote(title: string) {
+  if (!screen.queryByRole('textbox', { name: '새 노트 제목' })) fireEvent.click(screen.getByRole('button', { name: '새 페이지' }));
   const field = await waitFor(() => {
     const textbox = screen.getByRole('textbox', { name: '새 노트 제목' });
     expect(textbox.getAttribute('disabled')).toBeNull();
@@ -109,7 +111,10 @@ it('retries a committed private note with the same request and starts a new requ
   await screen.findByRole('alert');
   expect((screen.getByRole('textbox', { name: '새 노트 제목' }) as HTMLInputElement).value).toBe('Private title');
   fireEvent.click(screen.getByRole('button', { name: '현재 경로에 만들기' }));
-  await waitFor(() => expect((screen.getByRole('textbox', { name: '새 노트 제목' }) as HTMLInputElement).value).toBe(''));
+  await waitFor(() => expect(screen.queryByRole('textbox', { name: '새 노트 제목' })).toBeNull());
+  await waitFor(() => expect((screen.getByRole('button', { name: '새 페이지' }) as HTMLButtonElement).disabled).toBe(false));
+  fireEvent.click(screen.getByRole('button', { name: '새 페이지' }));
+  expect((screen.getByRole('textbox', { name: '새 노트 제목' }) as HTMLInputElement).value).toBe('');
   expect(value.savedNotes).toHaveLength(1);
   expect(value.creates).toHaveLength(2);
   expect(value.creates[1]).toEqual(value.creates[0]);

@@ -89,6 +89,7 @@ function DocTreeRowInner<T extends object>(props: Props<T>) {
   // auto-expand timer recognize unloaded subtrees so the consumer's lazy-load
   // (via onToggle) can populate them on demand.
   const hasLoadedChildren = !!node.children && node.children.length > 0;
+  const childrenLoaded = node.children !== undefined;
   const declaredHasChildren =
     (node as { hasChildren?: boolean }).hasChildren === true;
   const hasChildren = hasLoadedChildren || declaredHasChildren;
@@ -111,10 +112,10 @@ function DocTreeRowInner<T extends object>(props: Props<T>) {
   // that still has its id in openIds). Calling onToggle(id, true) is
   // idempotent for open state and triggers the consumer's lazy-load.
   useEffect(() => {
-    if (isOpen && declaredHasChildren && !hasLoadedChildren) {
+    if (isOpen && declaredHasChildren && !childrenLoaded) {
       onToggle(node.id, true);
     }
-  }, [isOpen, declaredHasChildren, hasLoadedChildren, node.id, onToggle]);
+  }, [isOpen, declaredHasChildren, childrenLoaded, node.id, onToggle]);
 
   useEffect(() => {
     const el = rowRef.current;

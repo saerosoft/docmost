@@ -8,9 +8,18 @@ import { NoteRelations } from './NoteRelations';
 import { NoteAttachments } from './NoteAttachments';
 import type { AddComment, Comment, Note, NoteApi, Page, Revision } from './model';
 
-interface Props { api: NoteApi; note: Note; dirty: boolean; onRestore: (note: Note) => void; onOpen: (id: string) => void; onRevision: (note: Note) => void }
-export function NotePanels({ api, note, dirty, onRestore, onOpen, onRevision }: Props) {
-  const [panel, setPanel] = useState<string | null>('comments');
+export type NotePanel = 'comments' | 'history' | 'properties' | 'relations' | 'attachments';
+interface Props { api: NoteApi; note: Note; dirty: boolean; panel?: NotePanel; onPanelChange?: (panel: NotePanel) => void; onRestore: (note: Note) => void; onOpen: (id: string) => void; onRevision: (note: Note) => void }
+export function NotePanels({ api, note, dirty, panel: selectedPanel, onPanelChange, onRestore, onOpen, onRevision }: Props) {
+  const [localPanel, setLocalPanel] = useState<NotePanel>('comments');
+  const panel = selectedPanel || localPanel;
+  const [visited, setVisited] = useState<NotePanel[]>([panel]);
+  useEffect(() => { setVisited(values => values.includes(panel) ? values : [...values, panel]); }, [panel]);
+  function select(value: string | null) {
+    if (!value) return;
+    const next = value as NotePanel;
+    setLocalPanel(next); onPanelChange?.(next);
+  }
   const [comments, setComments] = useState<Page<Comment>>({ items: [], nextCursor: null });
   const [history, setHistory] = useState<Page<Revision>>({ items: [], nextCursor: null });
   const [error, setError] = useState('');
@@ -46,20 +55,20 @@ export function NotePanels({ api, note, dirty, onRestore, onOpen, onRevision }: 
     return committed;
   }
   return <aside className="note-panels" aria-label="노트 상세">
-    <Tabs value={panel} onChange={setPanel}><Tabs.List>
+    <Tabs value={panel} onChange={select}><Tabs.List aria-label="노트 상세 패널">
       <Tabs.Tab value="comments">댓글</Tabs.Tab><Tabs.Tab value="history">이력</Tabs.Tab><Tabs.Tab value="properties">속성</Tabs.Tab><Tabs.Tab value="relations">관계</Tabs.Tab><Tabs.Tab value="attachments">첨부</Tabs.Tab>
     </Tabs.List></Tabs>
     {error && <p role="alert">{error}</p>}{busy && <p role="status">처리 중…</p>}
-    {panel === 'comments' && <CommentListWithTabs comments={comments} canComment={note.canEdit} isLoading={busy} onSave={comment}
-      onLoadMore={() => void perform(async () => { const page = await api.comments(note.id, comments.nextCursor); setComments({ items: [...comments.items, ...page.items].slice(-100), nextCursor: page.nextCursor }); })}/>}
-    {panel === 'history' && <>
+    {visited.includes('comments') && <div hidden={panel !== 'comments'} className="note-panel-content"><CommentListWithTabs comments={comments} canComment={note.canEdit} isLoading={busy} onSave={comment}
+      onLoadMore={() => void perform(async () => { const page = await api.comments(note.id, comments.nextCursor); setComments({ items: [...comments.items, ...page.items].slice(-100), nextCursor: page.nextCursor }); })}/></div>}
+    {visited.includes('history') && <div hidden={panel !== 'history'} className="note-panel-content">
       {dirty && <p>현재 변경을 먼저 저장한 뒤 복원해 주세요.</p>}
       <DocmostHistory api={api} noteId={note.id} history={history} busy={busy} canRestore={note.canEdit && !dirty && !busy}
         onRestore={revision => { if (window.confirm(`개정 ${revision.revision}을 새 개정으로 복원할까요?`)) void perform(async () => onRestore(await api.restore(note.id, revision.revision, note.revision))); }}
         onLoadMore={() => void perform(async () => { const page = await api.history(note.id, history.nextCursor); setHistory({ items: [...history.items, ...page.items].slice(-100), nextCursor: page.nextCursor }); })}/>
-    </>}
-    {panel === 'properties' && <NoteProperties api={api} note={note} dirty={dirty} onRevision={onRevision}/>}
-    {panel === 'attachments' && <NoteAttachments api={api} noteId={note.id} revision={note.revision}/>}
-    {panel === 'relations' && <NoteRelations api={api} note={note} onOpen={onOpen} onRevision={onRevision}/>}
+    </div>}
+    {visited.includes('properties') && <div hidden={panel !== 'properties'} className="note-panel-content"><NoteProperties api={api} note={note} dirty={dirty} onRevision={onRevision}/></div>}
+    {visited.includes('attachments') && <div hidden={panel !== 'attachments'} className="note-panel-content"><NoteAttachments api={api} noteId={note.id} revision={note.revision}/></div>}
+    {visited.includes('relations') && <div hidden={panel !== 'relations'} className="note-panel-content"><NoteRelations api={api} note={note} onOpen={onOpen} onRevision={onRevision}/></div>}
   </aside>;
 }
