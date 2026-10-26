@@ -8,6 +8,6 @@
   .navbar { width: min(320px, calc(100vw - 48px)); }
   .header { padding-left: 0; padding-right: 0; }
   .header button, .header a { min-height: 44px; min-width: 44px; }
-  .mobileBackdrop { display: block; position: fixed; inset: 45px 0 0 min(320px, calc(100vw - 48px)); z-index: 99; }
+  .mobileBackdrop { display: block; position: fixed; inset: 45px 0 0 min(320px, calc(100vw - 48px)); z-index: 119; }
   .resizeHandle { display: none; }
 }

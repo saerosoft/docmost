@@ -34,7 +34,7 @@ export default function GlobalAppShell({ children, header, sidebar }: Props) {
 
   return <>
     <SkipToMain/>
-    <AppShell header={{ height: 45 }} navbar={{
+    <AppShell zIndex={120} header={{ height: 45 }} navbar={{
       width: sidebarWidth, breakpoint: 'sm',
       collapsed: { mobile: !mobileOpened, desktop: !desktopOpened },
     }} padding={0}>
