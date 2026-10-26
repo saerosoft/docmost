@@ -43,7 +43,7 @@ export function App() {
     <header className="app-header"><a className="brand" href={webUrl('/')} onClick={event => { if ((dirty.current.left || dirty.current.right) && !window.confirm('저장하지 않은 변경이 있습니다. 메인 화면으로 이동할까요?')) event.preventDefault(); }}>Knowledge Engine <span>Notes</span></a><Group>
       <Select aria-label="공간" placeholder="접근 가능한 공간 없음" data={spaces.map(value => ({ value: value.id, label: value.name }))} value={spaceId} onChange={value => { if (value && value !== spaceId && (!(dirty.current.left || dirty.current.right) || window.confirm('공간을 바꾸고 저장하지 않은 변경을 버릴까요?'))) { setSpaceId(value); setLeft(null); setRight(null); } }}/>
       <Button variant="light" onClick={() => { if (split && dirty.current.right && !window.confirm('오른쪽 창의 저장하지 않은 변경을 버릴까요?')) return; setSplit(value => !value); setTarget('left'); }}>{split ? '한 창으로' : '두 창으로'}</Button>
-      <a href="/source.html" target="_blank" rel="noreferrer">소스 · AGPL</a>
+      <a href={`${import.meta.env.BASE_URL}source.html`} target="_blank" rel="noreferrer">소스 · AGPL</a>
     </Group></header>
     {error && <div className="error" role="alert">{error} <a href={webUrl('/login')}>로그인</a></div>}
     <div className="workspace">

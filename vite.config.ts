@@ -27,10 +27,12 @@ function excalidrawFonts(): Plugin {
 }
 
 export default defineConfig({
+  base: process.env.NOTE_GUI_BASE_PATH || '/',
   plugins: [react(), excalidrawFonts()],
   define: { 'import.meta.env.VITE_WEB_PORT': JSON.stringify(webPort) },
   resolve: { alias: { '@': fileURLToPath(new URL('./src/vendor/docmost/client', import.meta.url)), '@knowledge': fileURLToPath(new URL('./src', import.meta.url)) } },
   server: {
+    allowedHosts: [process.env.PUBLIC_WEB_URL, process.env.NOTE_GUI_PUBLIC_ORIGIN].filter(Boolean).map(origin => new URL(origin!).hostname),
     host: '127.0.0.1', port: 9090, strictPort: true,
     watch: { ignored: ['**/.tmp/**', '**/public/source/**'] },
     proxy: { '/graphql': apiOrigin, '/api': apiOrigin },

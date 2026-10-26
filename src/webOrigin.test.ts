@@ -19,3 +19,8 @@ it('retains HTTPS and an IPv6 host when using another deployment port', () => {
   vi.stubEnv('VITE_WEB_PORT', '9443');
   expect(webUrl('/spaces/space/reviews?proposal=proposal#details', { protocol: 'https:', hostname: '[::1]' })).toBe('https://[::1]:9443/spaces/space/reviews?proposal=proposal#details');
 });
+
+it('uses the configured web origin behind a TLS-terminating proxy', () => {
+  vi.stubEnv('VITE_WEB_ORIGIN', 'https://web.example.test');
+  expect(webUrl('/login', { protocol: 'https:', hostname: 'notes.example.test' })).toBe('https://web.example.test/login');
+});

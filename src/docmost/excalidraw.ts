@@ -6,7 +6,7 @@ export function excalidrawLanguageCode(language: string) {
 }
 
 export async function loadExcalidraw() {
-  window.EXCALIDRAW_ASSET_PATH = import.meta.env.DEV ? '/node_modules/@excalidraw/excalidraw/dist/prod/' : '/excalidraw/';
+  window.EXCALIDRAW_ASSET_PATH = `${import.meta.env.BASE_URL}${import.meta.env.DEV ? 'node_modules/@excalidraw/excalidraw/dist/prod/' : 'excalidraw/'}`;
   const sdk = await import('@excalidraw/excalidraw');
   // This pinned SDK bundles Korean but omits it from its selectable list because
   // the translation is below its completion threshold. Enable only our bundled
