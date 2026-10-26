@@ -61,7 +61,7 @@ export function App({ api = defaultApi, onNavigate }: NoteGuiOptions) {
   }, [access.ready, access.refreshing, access.failure, spaceId]);
 
   function navigate(event: MouseEvent<HTMLAnchorElement>) {
-    if (event.ctrlKey || event.metaKey || event.shiftKey || event.button !== 0 || event.currentTarget.target === '_blank') return;
+    if (event.ctrlKey || event.metaKey || event.shiftKey || event.altKey || event.button !== 0 || event.currentTarget.target === '_blank') return;
     if ((dirty.current.left || dirty.current.right) && !window.confirm('저장하지 않은 변경이 있습니다. 메인 화면으로 이동할까요?')) {
       event.preventDefault(); return;
     }

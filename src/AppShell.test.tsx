@@ -112,6 +112,14 @@ it('lets the host navigate only after dirty-pane confirmation succeeds', () => {
   expect(onNavigate).toHaveBeenCalledExactlyOnceWith(home.getAttribute('href'));
 });
 
+it('preserves native Alt-click navigation instead of invoking the host router', () => {
+  const onNavigate = vi.fn(() => true);
+  render(<MantineProvider env="test"><App onNavigate={onNavigate}/></MantineProvider>);
+  window.addEventListener('click', event => event.preventDefault(), { once: true });
+  fireEvent.click(screen.getByRole('link', { name: /^홈$/ }), { altKey: true });
+  expect(onNavigate).not.toHaveBeenCalled();
+});
+
 it('requires confirmation before a native space selection discards pane drafts', async () => {
   show();
   fireEvent.change(screen.getByLabelText('왼쪽 draft'), { target: { value: 'Keep the first workspace draft' } });
