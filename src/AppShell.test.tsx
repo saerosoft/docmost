@@ -98,6 +98,20 @@ it('opens search in the active pane and preserves the other pane draft', async (
   expect(new URL(window.location.href).searchParams.get('right')).toBe('search-result');
 });
 
+it('lets the host navigate only after dirty-pane confirmation succeeds', () => {
+  const onNavigate = vi.fn(() => true);
+  render(<MantineProvider env="test"><App onNavigate={onNavigate}/></MantineProvider>);
+  fireEvent.change(screen.getByLabelText('왼쪽 draft'), { target: { value: 'Keep until navigation is approved' } });
+  const confirm = vi.spyOn(window, 'confirm').mockReturnValue(false);
+  const home = screen.getByRole('link', { name: /^홈$/ });
+  expect(fireEvent.click(home)).toBe(false);
+  expect(onNavigate).not.toHaveBeenCalled();
+  expect((screen.getByLabelText('왼쪽 draft') as HTMLInputElement).value).toBe('Keep until navigation is approved');
+  confirm.mockReturnValue(true);
+  expect(fireEvent.click(home)).toBe(false);
+  expect(onNavigate).toHaveBeenCalledExactlyOnceWith(home.getAttribute('href'));
+});
+
 it('requires confirmation before a native space selection discards pane drafts', async () => {
   show();
   fireEvent.change(screen.getByLabelText('왼쪽 draft'), { target: { value: 'Keep the first workspace draft' } });

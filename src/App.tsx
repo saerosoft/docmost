@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState, type MouseEvent } from 'react';
 import { Alert, Button, Modal, Text } from '@mantine/core';
 import { api as defaultApi } from './api';
-import type { NoteApi } from './model';
+import type { NoteGuiOptions } from './host';
 import { NoteTree } from './NoteTree';
 import { NotePicker } from './NotePicker';
 import { Pane } from './Pane';
@@ -11,7 +11,7 @@ import { useSpaceAccess } from './useSpaceAccess';
 import GlobalAppShell from './vendor/docmost/client/components/layouts/global/global-app-shell';
 import { SpaceSidebar } from './vendor/docmost/client/features/space/components/sidebar/space-sidebar';
 
-export function App({ api = defaultApi }: { api?: NoteApi }) {
+export function App({ api = defaultApi, onNavigate }: NoteGuiOptions) {
   const params = new URLSearchParams(window.location.search);
   const access = useSpaceAccess(api);
   const { spaces } = access;
@@ -62,7 +62,10 @@ export function App({ api = defaultApi }: { api?: NoteApi }) {
 
   function navigate(event: MouseEvent<HTMLAnchorElement>) {
     if (event.ctrlKey || event.metaKey || event.shiftKey || event.button !== 0 || event.currentTarget.target === '_blank') return;
-    if ((dirty.current.left || dirty.current.right) && !window.confirm('저장하지 않은 변경이 있습니다. 메인 화면으로 이동할까요?')) event.preventDefault();
+    if ((dirty.current.left || dirty.current.right) && !window.confirm('저장하지 않은 변경이 있습니다. 메인 화면으로 이동할까요?')) {
+      event.preventDefault(); return;
+    }
+    if (onNavigate?.(event.currentTarget.href)) event.preventDefault();
   }
   function changeSpace(value: string) {
     if (value === spaceId) return;

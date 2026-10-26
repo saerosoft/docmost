@@ -8,17 +8,15 @@ import './vendor/docmost/client/styles/a11y-overrides.css';
 import { theme, mantineCssResolver } from './vendor/docmost/client/theme';
 import './integration.css';
 import { App } from './App';
-import type { NoteApi } from './model';
-import type { MountedNoteGui } from './host';
-export type { MountedNoteGui, NoteGuiHostModule } from './host';
+import type { MountedNoteGui, NoteGuiOptions } from './host';
+export type { MountedNoteGui, NoteGuiHostModule, NoteGuiOptions } from './host';
 
 export type { NoteApi } from './model';
-export interface NoteGuiOptions { api?: NoteApi }
 
 /** The extracted Docmost workspace, including its original theme and editor styles. */
 function NoteGui(options: NoteGuiOptions) {
   return <I18nextProvider i18n={docmostI18n}><MantineProvider theme={theme} cssVariablesResolver={mantineCssResolver} defaultColorScheme="light">
-    <App api={options.api}/>
+    <App {...options}/>
   </MantineProvider></I18nextProvider>;
 }
 

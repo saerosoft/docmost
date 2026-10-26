@@ -87,7 +87,10 @@ The module exports `mountNoteGui` at runtime and the `NoteGuiOptions`, `NoteApi`
 `MountedNoteGui` and `NoteGuiHostModule` TypeScript contracts.
 `mountNoteGui(container, options?)` bundles the pinned React runtime, creates
 an isolated React root and returns `{ unmount() }`. `NoteGuiOptions.api` may supply a compatible `NoteApi` adapter;
-omitting it uses the existing authenticated domain adapter. The host must
+omitting it uses the existing authenticated domain adapter. `NoteGuiOptions.onNavigate`
+may handle native product links through the host router by returning `true`;
+return `false` to retain browser navigation. Dirty-pane confirmation runs before
+the callback, and modified clicks retain their native behavior. The host must
 still preserve backend authorization, revision checks and CSRF. A consumer
 whose build resolves the pinned checkout as a package can import
 `mountNoteGui` from `@knowledge-engine/note-gui` and the CSS from
