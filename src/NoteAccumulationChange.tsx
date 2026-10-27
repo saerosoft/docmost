@@ -17,7 +17,7 @@ export function NoteAccumulationChange({ api, id }: { api: NoteApi; id: string }
   return <section className="accumulation-comparison" aria-label="변경 전후와 반영 기준">
     <h4>변경 전</h4>
     {value.before ? <><p>개정 {value.before.revision} · {value.before.title}</p><pre>{value.before.body}</pre></> : <p>노트 생성 전입니다.</p>}
-    <h4>반영 내용</h4><pre>{value.operationBody}</pre>
+    <h4>반영한 제안 내용</h4><pre>{value.operationBody}</pre>
     <h4>변경 후</h4>
     {value.after ? <><p>개정 {value.after.revision} · {value.after.title}</p><pre>{value.after.body}</pre></> : <p>현재 열람할 수 있는 개정이 없습니다.</p>}
     <h4>이 변경에 적용한 기준</h4>

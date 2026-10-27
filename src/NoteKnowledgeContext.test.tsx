@@ -95,3 +95,29 @@ it('ignores a late response from the previously selected note', async () => {
   finish({ items: [item], nextCursor: null });
   await waitFor(() => expect(within(screen.getByRole('region', { name: '누적 이력' })).queryByText(item.preview)).toBeNull());
 });
+
+it.each([
+  ['APPEND_NOTE', '추가 제안 반영'],
+  ['REPLACE_NOTE', '교체 제안 반영'],
+])('keeps historical %s proposals distinct from the saved current content', async (kind, label) => {
+  const value = fixture();
+  value.accumulations.mockResolvedValue({ items: [{ ...item, kind }], nextCursor: null });
+  value.accumulationChange.mockResolvedValue({
+    operationBody: 'The earlier delivery date was Monday.',
+    before: { revision: 3, title: 'Delivery', body: 'Human instructions. Current delivery is Friday.' },
+    after: { revision: 4, title: 'Delivery', body: 'Human instructions. Current delivery is Friday.' },
+    preserveHumanFields: true, requireEvidence: true, excludePrivateExamples: true, reviewPolicy: 'REVIEW', allowedDocumentTypes: ['text/plain'],
+  });
+  show(value.api);
+  const summary = (await screen.findByText(label)).closest('summary')!;
+  expect(screen.queryByText('현재 정리 갱신')).toBeNull();
+  expect(screen.getByText(/과거 자료는 현재 정리를 바꾸지 않고 이력에만/)).toBeTruthy();
+  fireEvent.click(summary);
+  expect(screen.getByRole('link', { name: '반영 기록' }).getAttribute('href')).toContain('/spaces/space/reviews?changeSet=change&operation=item');
+  expect(screen.getByRole('link', { name: 'Personal memo' }).getAttribute('href')).toContain('/spaces/space/source-revisions/source');
+  fireEvent.click(screen.getByRole('button', { name: '변경 전후·반영 기준 보기' }));
+  expect(await screen.findByRole('heading', { name: '반영한 제안 내용' })).toBeTruthy();
+  expect(screen.getByText('The earlier delivery date was Monday.')).toBeTruthy();
+  expect(screen.getAllByText('Human instructions. Current delivery is Friday.')).toHaveLength(2);
+  expect(value.accumulationChange).toHaveBeenCalledExactlyOnceWith('item');
+});
