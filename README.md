@@ -28,6 +28,9 @@ and modifications. Upstream history remains available in Git.
   Current items distinguish confirmed facts, requests, inference and
   unclassified statements. Expand an item to inspect its original evidence,
   source and application times, applied rule versions and before/after records.
+  Applied-history labels identify the proposal type: older material may remain
+  in history without changing current content. The recorded proposal stays
+  separate from its saved comparison, and review links select the exact operation.
 - Editable Draw.io XML, Excalidraw scenes and Mermaid source, with attachment
   revision references and authorized file access.
 
