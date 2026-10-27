@@ -110,6 +110,7 @@ it.each([
   });
   show(value.api);
   const summary = (await screen.findByText(label)).closest('summary')!;
+  expect(summary.textContent).toContain(label + ' · 개정 4 · ');
   expect(screen.queryByText('현재 정리 갱신')).toBeNull();
   expect(screen.getByText(/과거 자료는 현재 정리를 바꾸지 않고 이력에만/)).toBeTruthy();
   fireEvent.click(summary);

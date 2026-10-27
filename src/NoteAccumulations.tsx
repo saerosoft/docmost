@@ -41,7 +41,7 @@ function Accumulation({ api, item }: { api: NoteApi; item: NoteAccumulation }) {
   const [expanded, setExpanded] = useState(false);
   const path = `/spaces/${encodeURIComponent(item.spaceId)}`;
   return <article className="accumulation-item">
-    <details><summary><span className="accumulation-heading"><span>{operationLabels[item.kind] || item.kind}</span><span>개정 {item.resultRevision}</span></span><time className="context-muted" dateTime={item.appliedAt}>{date(item.appliedAt)}</time></summary>
+    <details><summary><span className="accumulation-heading"><span>{operationLabels[item.kind] || item.kind}</span>{' · '}<span>개정 {item.resultRevision}</span></span>{' · '}<time className="context-muted" dateTime={item.appliedAt}>{date(item.appliedAt)}</time></summary>
     <h3>{item.title}</h3>
     <p className="preserve">{item.preview}</p>
     <p className="context-muted">반영 시각 <time dateTime={item.appliedAt}>{date(item.appliedAt)}</time> · {item.actorName || '알 수 없는 사용자'} · {item.automatic ? '정책에 따라 자동 반영' : `${item.reviewerName || '알 수 없는 사용자'} 검토 후 반영`}</p>
