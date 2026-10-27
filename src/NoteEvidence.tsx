@@ -1,9 +1,10 @@
 import type { NoteAccumulation } from './model';
 import { webUrl } from './webOrigin';
+import { useNoteDateTime } from './dateTime';
 
-const date = (value: string) => new Date(value).toLocaleString('ko-KR', { dateStyle: 'medium', timeStyle: 'short' });
 
 export function NoteEvidence({ evidence, evidenceCount }: Pick<NoteAccumulation, 'evidence' | 'evidenceCount'>) {
+  const date = useNoteDateTime();
   return <>
     {evidence.map(item => <section key={item.id} className="note-evidence" data-visibility={item.visibility} aria-label={`${item.title} 근거`}>
       <div className="evidence-heading">

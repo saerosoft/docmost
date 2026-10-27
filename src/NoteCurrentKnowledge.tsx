@@ -3,11 +3,11 @@ import type { CurrentKnowledgeItem, CurrentKnowledgePage, NoteApi } from './mode
 import { NoteEvidence } from './NoteEvidence';
 import { NoteAccumulationChange } from './NoteAccumulationChange';
 import { webUrl } from './webOrigin';
+import { useNoteDateTime } from './dateTime';
 
 const claims: Record<CurrentKnowledgeItem['claimKind'], string> = {
   CONFIRMED_FACT: '확정 사실', REQUEST: '제안·요청', INFERENCE: '추정 · 확인 전', UNSPECIFIED: '확정 여부 미분류',
 };
-const date = (value: string) => new Date(value).toLocaleString('ko-KR', { dateStyle: 'medium', timeStyle: 'short' });
 
 export function NoteCurrentKnowledge({ api, noteId, spaceId }: { api: NoteApi; noteId: string; spaceId: string }) {
   const [offset, setOffset] = useState(0);
@@ -40,6 +40,7 @@ export function NoteCurrentKnowledge({ api, noteId, spaceId }: { api: NoteApi; n
 }
 
 function CurrentItem({ api, item, spaceId }: { api: NoteApi; item: CurrentKnowledgeItem; spaceId: string }) {
+  const date = useNoteDateTime();
   const [expanded, setExpanded] = useState(false);
   return <article className="current-knowledge-item">
     <span className="claim-label" data-claim={item.claimKind}>{claims[item.claimKind]}</span>

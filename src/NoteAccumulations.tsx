@@ -3,8 +3,8 @@ import type { NoteAccumulation, NoteApi, Page } from './model';
 import { NoteEvidence } from './NoteEvidence';
 import { NoteAccumulationChange } from './NoteAccumulationChange';
 import { webUrl } from './webOrigin';
+import { useNoteDateTime } from './dateTime';
 
-const date = (value: string) => new Date(value).toLocaleString('ko-KR', { dateStyle: 'medium', timeStyle: 'short' });
 const operationLabels: Record<string, string> = { CREATE_NOTE: '노트 생성', APPEND_NOTE: '내용 추가', REPLACE_NOTE: '현재 정리 갱신' };
 
 export function NoteAccumulations({ api, noteId }: { api: NoteApi; noteId: string }) {
@@ -37,6 +37,7 @@ export function NoteAccumulations({ api, noteId }: { api: NoteApi; noteId: strin
 }
 
 function Accumulation({ api, item }: { api: NoteApi; item: NoteAccumulation }) {
+  const date = useNoteDateTime();
   const [expanded, setExpanded] = useState(false);
   const path = `/spaces/${encodeURIComponent(item.spaceId)}`;
   return <article className="accumulation-item">

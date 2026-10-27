@@ -8,6 +8,7 @@ import './vendor/docmost/client/styles/a11y-overrides.css';
 import { theme, mantineCssResolver } from './vendor/docmost/client/theme';
 import './integration.css';
 import { App } from './App';
+import { createNoteDateTimeFormatter, NoteDateTimeContext } from './dateTime';
 import type { MountedNoteGui, NoteGuiOptions } from './host';
 export type { MountedNoteGui, NoteGuiHostModule, NoteGuiOptions } from './host';
 
@@ -22,7 +23,8 @@ function NoteGui(options: NoteGuiOptions) {
 
 /** Mounts an isolated React root; the host must import the distributed CSS as well. */
 export function mountNoteGui(container: HTMLElement, options: NoteGuiOptions = {}): MountedNoteGui {
+  const dateTime = createNoteDateTimeFormatter(options.timeZone);
   const root = createRoot(container);
-  root.render(<NoteGui {...options}/>);
+  root.render(<NoteDateTimeContext.Provider value={dateTime}><NoteGui {...options}/></NoteDateTimeContext.Provider>);
   return { unmount: () => root.unmount() };
 }

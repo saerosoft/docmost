@@ -91,7 +91,15 @@ omitting it uses the existing authenticated domain adapter. `NoteGuiOptions.onNa
 may handle native product links through the host router by returning `true`;
 return `false` to retain browser navigation. Dirty-pane confirmation runs before
 the callback, and modified clicks retain their native behavior. The host must
-still preserve backend authorization, revision checks and CSRF. A consumer
+still preserve backend authorization, revision checks and CSRF.
+
+The optional `NoteGuiOptions.timeZone` setting accepts an IANA time zone for source evidence and
+knowledge application timestamps. Those timestamps include the applied zone.
+Omitting the option uses the browser clock. The setting belongs to each mount;
+multiple roots can use different clocks. An invalid zone rejects the mount
+before creating a React root. The product host passes its workspace time zone.
+
+A consumer
 whose build resolves the pinned checkout as a package can import
 `mountNoteGui` from `@knowledge-engine/note-gui` and the CSS from
 `@knowledge-engine/note-gui/style.css`; this does not imply an npm publication.
