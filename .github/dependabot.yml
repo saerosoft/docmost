@@ -1,0 +1,32 @@
+version: 2
+updates:
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+      time: "09:00"
+      timezone: Asia/Phnom_Penh
+    open-pull-requests-limit: 5
+    commit-message:
+      prefix: chore(note-gui)
+    groups:
+      minor-and-patch:
+        patterns: ["*"]
+        update-types: [minor, patch]
+
+  - package-ecosystem: npm
+    directory: /
+    target-branch: feature/docmost-note-module-20261026
+    schedule:
+      interval: weekly
+      day: monday
+      time: "09:00"
+      timezone: Asia/Phnom_Penh
+    open-pull-requests-limit: 5
+    commit-message:
+      prefix: chore(note-gui)
+    groups:
+      minor-and-patch:
+        patterns: ["*"]
+        update-types: [minor, patch]
